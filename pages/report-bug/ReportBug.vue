@@ -69,7 +69,7 @@
   };
 
   function click_remove_image_button() {
-    image.value = null;
+    image.value = '';
   }
 
   function click_submit_bug_button() {
