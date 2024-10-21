@@ -1,6 +1,6 @@
 <template>
-	<view class="main-content">
-		<view class="header">
+	<view class="main-content" style="background-image: url('/static/images/背景.jpg');">
+		<view class="header" style=" background-image: url('/static/images/bg_mailtest_guet_edu_cn_1415261291691.jpg'); ">
 			<text id="t1">欢迎使用基地管理系统</text>
 			<text id="t2">让社团管理更加简单</text>
 		</view>
@@ -33,7 +33,6 @@
 			<image src="../../static/svgs/email.svg"></image>
 		</view>
 	</view>
-
 </template>
 
 <script>
@@ -45,12 +44,12 @@
 				account:"",
 				pwd:"",
 				email:"",
-				vaiCode:""
+				vaiCode:"",
+				app
 			}
 		},
 		onLoad() {
-			
-			
+			this.app = getApp()
 		},
 		methods: {
 			loginByAccount(){
@@ -75,15 +74,20 @@
 					user_id:this.account,
 					pwd:this.pwd
 				}).then(res=>{
-					console.log(res)
-					let app = getApp()
-					app.globalData.userData = res.data.data
 					uni.hideLoading()
 					uni.showToast({
-						title:"登录成功",
-						
+						title:res.status_text,
+						icon:Error
 					})
-				}).catch(err=>{
+					if(res.status_code != 200){
+						return
+					}
+					this.app.globalData.userData = res.data
+					setTimeout(()=>{
+						uni.switchTab({
+							url:"/pages/notice/notice"
+						})
+					},0)
 					
 				})
 			},
@@ -95,6 +99,6 @@
 	}
 </script>
 
-<style lang="scss" scoped>
-@import url(./login.scss);
+<style lang="css" scoped>
+@import url(./login.css);
 </style>

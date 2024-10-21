@@ -6,8 +6,54 @@
 				"navigationBarTitleText": "title",
 				"navigationBarBackgroundColor": "#f5deb3"
 			}
+		},
+		{
+			"path" : "pages/notice/notice",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/functionArea/functionArea",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/mySelf/mySelf",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
 	],
+	"tabBar": {
+		"height": "50px",
+		"color": "#000000",
+		"selectedColor":"#0272af77",
+		"backgroundColor":"#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/notice/notice",
+				"iconPath": "static/svgs/tabbar_notice.svg",
+				"selectedIconPath": "static/svgs/tabbar_notice_selected.svg",
+				"text": "公告"
+			},
+			{
+				"pagePath": "pages/mySelf/mySelf",
+				"iconPath": "static/svgs/people.svg",
+				"selectedIconPath": "static/svgs/people_selected.svg",
+				"text": "我的"
+			}
+		],
+		 "midButton": {
+		 	"backgroundImage": "static/svgs/tabbar_function.svg"
+			
+		 }
+	},
+
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

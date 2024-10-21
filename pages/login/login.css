@@ -1,0 +1,141 @@
+.main-content {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
+	width: 100%;
+	background-size: cover;
+	z-index: 1;
+}
+
+.header {
+	display: block;
+	background-size: cover;
+	height: 140px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+#t1 {
+	flex: 1;
+	font-size: 26px;
+	font-weight: bolder;
+	color: white;
+	background-color: #0272af77;
+	padding-left: 20px;
+	padding-top: 30px;
+
+}
+
+#t2 {
+	flex: 1;
+	font-size: 15.5px;
+	font-weight: bolder;
+	color: white;
+	background-color: #0272af77;
+	padding-left: 20px;
+	padding-top: 30px;
+}
+
+.body {
+	margin-top: 40px;
+	width: 85vw;
+	align-self: center;
+}
+
+.body .account-login {}
+
+.body .account-login .input-account {
+	display: flex;
+	align-items: center;
+	height: 32px;
+	padding: 4px;
+	margin-bottom: 8px;
+	border-bottom: 2px solid black;
+}
+
+.input-account image {
+	margin-right: 8px;
+	height: 24px;
+	width: 24px;
+}
+
+.body .input-password {
+	display: flex;
+	align-items: center;
+	height: 32px;
+	padding: 4px;
+	margin-bottom: 8px;
+	border-bottom: 2px solid black;
+}
+
+.body .input-password image {
+	margin-right: 8px;
+	height: 24px;
+	width: 24px;
+}
+
+.body .function-area {
+	padding: 8px;
+	justify-content: space-between;
+	display: flex;
+}
+
+.body .function-area #t3 {
+	font-size: 12px;
+	font-weight: bolder;
+	color: $uni-bg-color-mask;
+}
+
+.body .function-area #t4 {
+	font-size: 12px;
+	font-weight: bolder;
+	color: #3c90be;
+}
+
+.account-login button {
+	margin-top: 10px;
+	background-color: #0272af;
+	color: white;
+	font-weight: bolder;
+	width: 85%;
+	height: 35px;
+	line-height: 35px;
+}
+
+.email-login {}
+
+.footer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-top: 15vh;
+}
+
+.footer .divider {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.footer .divider .line {
+	height: 1px;
+	width: 25vw;
+	border-bottom: 1px solid gray;
+}
+
+.footer .divider .line text {
+	font-size: 12px;
+	font-weight: bolder;
+	color: gray;
+}
+
+.footer image {
+	margin-top: 12px;
+	height: 32px;
+	width: 32px;
+}
