@@ -45,7 +45,7 @@
 				pwd:"",
 				email:"",
 				vaiCode:"",
-				app
+				app:""
 			}
 		},
 		onLoad() {
