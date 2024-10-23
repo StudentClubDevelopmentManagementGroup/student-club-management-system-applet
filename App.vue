@@ -1,25 +1,8 @@
 <script lang="ts">
-	import { userData } from '@/types/index';
 
 	export default {
 		globalData:{
-			user_data : {
-				user_info: {
-					user_id: '',
-					department: {
-						department_name: ''
-					},
-					name: '',
-					tel: '',
-					mail: '',
-					role: {
-						is_student: false,
-						is_teacher: false,
-						is_club_member: false,
-						is_club_manager: false,
-						is_super_admin: false
-					}
-				},
+			userData : {
 				token: ''
 			}
 		},

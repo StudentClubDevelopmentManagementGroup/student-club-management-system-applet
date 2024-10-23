@@ -3,8 +3,7 @@
 		{
 			"path": "pages/login/login",
 			"style": {
-				"navigationBarTitleText": "title",
-				"navigationBarBackgroundColor": "#f5deb3"
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -33,7 +32,7 @@
 	"tabBar": {
 		"height": "50px",
 		"color": "#000000",
-		"selectedColor":"#0272afff",
+		"selectedColor":"#0272af",
 		"backgroundColor":"#ffffff",
 		"list": [
 			{
@@ -62,8 +61,7 @@
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarBackgroundColor": "#ffffff"
 	},
 	"uniIdRouter": {}
 }

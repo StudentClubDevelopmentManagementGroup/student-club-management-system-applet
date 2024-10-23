@@ -12,13 +12,13 @@
 				</view>
 				<view class="input-password">
 					<image src="../../static/svgs/lock.svg" mode="aspectFit"></image>
-					<input v-model="pwd" placeholder="请输入密码" />
+					<input type="password" v-model="pwd" placeholder="请输入密码" />
 				</view>
 				<view class="function-area">
-					<text id="t3">免费注册</text>
-					<text id="t4">忘记密码？</text>
+					<text id="t3" @click="developing()">免费注册</text>
+					<text id="t4" @click="developing()">忘记密码？</text>
 				</view>
-				<button @click="loginByAccount()">登录</button>
+				<button @click="loginByAccount()">登 录</button>
 			</view>
 			<view v-else class="email-login">
 				
@@ -30,13 +30,13 @@
 				<text>快捷登录方式</text>
 				<view class="line"></view>
 			</view>
-			<image src="../../static/svgs/email.svg"></image>
+			<image src="../../static/svgs/email.svg" @click="developing()"></image>
 		</view>
 	</view>
 </template>
 
 <script>
-	import apiClient from "@/utils/http.ts"
+	import http from "@/utils/http.ts"
 	export default {
 		data() {
 			return {
@@ -70,16 +70,17 @@
 				uni.showLoading({
 					title:"登录中..."
 				})
-				apiClient.post('/user/login/password',{
-					user_id:this.account,
-					pwd:this.pwd
+			
+				http.post('/user/login/password', {
+					user_id: this.account,
+					pwd: this.pwd
 				}).then(res=>{
-					uni.hideLoading()
-					uni.showToast({
-						title:res.status_text,
-						icon:Error
-					})
 					if(res.status_code != 200){
+						uni.showToast({
+							title:res.status_text,
+							icon:'error',
+							duration:3000
+						})
 						return
 					}
 					this.app.globalData.userData = res.data
@@ -88,13 +89,18 @@
 							url:"/pages/notice/notice"
 						})
 					},0)
-					
 				})
 			},
 			loginByEmail(){
 				
+			},
+			developing(){
+				uni.showToast({
+					title:"该功能正在开发",
+					icon:"none"
+				})
+				return
 			}
-			
 		}
 	}
 </script>
