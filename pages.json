@@ -17,7 +17,9 @@
 			"path" : "pages/functionArea/functionArea",
 			"style" : 
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "常用功能",
+				"navigationBarBackgroundColor": "#0272af",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
