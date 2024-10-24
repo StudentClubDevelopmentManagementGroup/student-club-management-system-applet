@@ -1,0 +1,89 @@
+#main-content{
+	background-size: cover;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+#user-info{
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: fit-content;
+	background-color: white;
+	align-items: center;
+}
+#user-info text{
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+#avatar{
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	margin: 16px;
+	margin-right: 24px;
+}
+#user-name{
+	font-weight: bold;
+}
+#user-department{
+	color: gray;
+}
+#setting{
+	height: 24px;
+	width: 24px;
+	position: absolute;
+	right: 0;
+	margin: 16px;
+}
+
+#functionArea1{
+	height: fit-content;
+	width: 100%;
+	background-color: white;
+	margin-top: 16px;
+	margin-bottom: 16px;
+	display: flex;
+}
+#functionArea1 .item{
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	align-items: center;
+	justify-content: center;
+	height: 96px;
+	width: max-content;
+	background-color: white;
+}
+#functionArea1 .item image{
+	height: 42px;
+	width: 42px;
+	margin-bottom: 12px;
+}
+#functionArea1 .item text{
+	font-size: 14px;
+	font-weight: bold;
+}
+
+#functionArea2 .item{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	height: fit-content;
+	width: 100%;
+	background-color: white;
+	border-bottom: 2px solid #d8d8d8;
+}
+#functionArea2 .item image{
+	height: 24px;
+	width: 24px;
+	margin: 16px;
+}
+
+#functionArea2 .item text{
+	font-size: 14px;
+	font-weight: bold;
+}
