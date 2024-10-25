@@ -1,4 +1,9 @@
-function 小写下划线to小驼峰(obj) {
+/**
+ * 将对象的键名从小写下划线格式转换为小驼峰格式
+ * @param {Object} obj - 要转换键名的对象
+ * @returns {Object} - 返回转换后键名为小驼峰格式的新对象
+ */
+function changeNameFromLowerSnakeToCamel(obj) {
   if (!obj || typeof obj !== 'object') {
     return obj;
   }
@@ -8,7 +13,7 @@ function 小写下划线to小驼峰(obj) {
 
   originKeys.forEach(key => {
 	if(typeof obj[key] === 'object'){
-		obj[key] = 小写下划线to小驼峰(obj[key])
+		obj[key] = changeNameFromLowerSnakeToCamel(obj[key])
 	}
 	
     const words = key.split("_");
@@ -20,5 +25,5 @@ function 小写下划线to小驼峰(obj) {
 }
 
 export default {
-	小写下划线to小驼峰
+	changeNameFromLowerSnakeToCamel
 };

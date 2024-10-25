@@ -1,3 +1,13 @@
+# 项目依赖包
 /node_modules
-/.hbuilderx
+
+# 项目构建目录
 /unpackage
+
+# IDE 相关
+/.hbuilderx
+.idea
+.vscode
+
+# 涉密文件
+/private
