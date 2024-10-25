@@ -1,7 +1,7 @@
 <template>
 	<view id="main-content" style="background-image: url('/static/images/背景.jpg');">
 		<view id="user-info">
-			<image id="avatar" src="../../static/logo.png"></image>
+			<image id="avatar" src="../../static/images/avatars/特异人士2.png"></image>
 			<view style="display: flex;flex-direction: column;">
 				<text id="user-name">{{userName}}</text>
 				<text id="user-department">XXXX社团</text>
@@ -51,7 +51,7 @@
 		onLoad() {
 			this.app = getApp()
 			
-			this.userName = this.app.globalData.userData.user_info.name
+			this.userName = this.app.globalData.userData.userInfo.name
 		},
 
 		methods: {

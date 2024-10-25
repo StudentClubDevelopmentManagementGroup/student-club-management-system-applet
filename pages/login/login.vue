@@ -37,6 +37,7 @@
 
 <script>
 	import http from "@/utils/http.ts"
+	import tools from "@/utils/tools.js"
 	export default {
 		data() {
 			return {
@@ -83,7 +84,7 @@
 						})
 						return
 					}
-					this.app.globalData.userData = res.data
+					this.app.globalData.userData = tools.小写下划线to小驼峰(res.data)
 					setTimeout(()=>{
 						uni.switchTab({
 							url:"/pages/notice/notice"
