@@ -84,7 +84,7 @@
 						})
 						return
 					}
-					this.app.globalData.userData = tools.小写下划线to小驼峰(res.data)
+					this.app.globalData.userData = tools.changeNameFromLowerSnakeToCamel(res.data)
 					setTimeout(()=>{
 						uni.switchTab({
 							url:"/pages/notice/notice"
