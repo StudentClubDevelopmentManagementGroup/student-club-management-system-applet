@@ -18,7 +18,8 @@
 					<text id="t3" @click="developing()">免费注册</text>
 					<text id="t4" @click="developing()">忘记密码？</text>
 				</view>
-				<my-button :isLoading="isLoading" :text="new String(`登 录`)" class="button" @click="loginByAccount()">登 录></my-button>
+				<!-- <my-button :isLoading="isLoading" :text="new String(`登 录`)" class="button" @click="loginByAccount()">登 录></my-button> -->
+				<button class="button" :class="isLoading?'disable':''" @click="loginByAccount()">登 录</button>
 			</view>
 			<view v-else class="email-login">
 				

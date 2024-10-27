@@ -117,6 +117,12 @@
 	width: 85%;
 	height: 35px;
 	line-height: 35px;
+	background-color: #0272af;
+	transition: 0.3s all;
+}
+.account-login .button.disable {
+	background-color: gray;
+	pointer-events: none
 }
 
 .email-login {}
