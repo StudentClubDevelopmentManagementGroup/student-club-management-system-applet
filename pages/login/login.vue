@@ -18,7 +18,8 @@
 					<text id="t3" @click="developing()">免费注册</text>
 					<text id="t4" @click="developing()">忘记密码？</text>
 				</view>
-				<button @click="loginByAccount()">登 录</button>
+				<!-- <my-button :isLoading="isLoading" :text="new String(`登 录`)" class="button" @click="loginByAccount()">登 录></my-button> -->
+				<button class="button" :class="isLoading?'disable':''" @click="loginByAccount()">登 录</button>
 			</view>
 			<view v-else class="email-login">
 				
@@ -46,7 +47,8 @@
 				pwd:"",
 				email:"",
 				vaiCode:"",
-				app:""
+				app:"",
+				isLoading:false
 			}
 		},
 		onLoad() {
@@ -68,6 +70,7 @@
 					})
 					return
 				}
+				this.isLoading = true
 				uni.showLoading({
 					title:"登录中..."
 				})
@@ -76,20 +79,21 @@
 					user_id: this.account,
 					pwd: this.pwd
 				}).then(res=>{
+					uni.showToast({
+						title:res.status_text,
+						icon:res.status_code === 200?"success":"error",
+						duration:1500
+					})
 					if(res.status_code != 200){
-						uni.showToast({
-							title:res.status_text,
-							icon:'error',
-							duration:3000
-						})
 						return
 					}
 					this.app.globalData.userData = tools.changeNameFromLowerSnakeToCamel(res.data)
 					setTimeout(()=>{
+						this.isLoading = false
 						uni.switchTab({
 							url:"/pages/notice/notice"
 						})
-					},0)
+					},1500)
 				})
 			},
 			loginByEmail(){

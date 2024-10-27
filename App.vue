@@ -1,15 +1,14 @@
 <script lang="ts">
-
 	export default {
-		globalData:{
-			userData : {
+		globalData: {
+			userData: {
 				token: ''
 			}
 		},
 
 		onLaunch: function () {
 			console.log('App Launch')
-		
+
 		},
 		onShow: function () {
 			console.log('App Show')
@@ -22,6 +21,4 @@
 
 <style>
 	/*每个页面公共css */
-	
-	
 </style>

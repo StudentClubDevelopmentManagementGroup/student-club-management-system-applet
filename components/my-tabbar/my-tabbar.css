@@ -1,0 +1,58 @@
+.tabbar{
+	--selected-color:#0272af;
+	--color:#ffffff;
+	--tabbar--height:50px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-around;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	height: var(--tabbar--height);
+	width: 100vw;
+	z-index: 100;
+	background-color: white;
+	border-top: 1px solid gray;
+}
+.item{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	width: 100%;
+	
+}
+.item image{
+	height: 32px;
+	width: 32px;
+}
+.item text{
+	font-size: 14px;
+}
+.item.active text{
+	color: var(--selected-color);
+}
+
+.midButton{
+	--height:64px;
+	position: absolute;
+	bottom: calc(50% - 7px) ;
+	width: 64px;
+	height: 64px;
+	z-index: 101;
+}
+.midButton image{
+	width: 100%;
+	height: 100%;
+	background-color: #0272af;
+	border-radius: 50%;
+	
+}
+.midButton.active image{
+	width: 100%;
+	height: 100%;
+	background-color: #759fe0;
+	border-radius: 50%;
+}
