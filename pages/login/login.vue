@@ -91,7 +91,7 @@
 					setTimeout(()=>{
 						this.isLoading = false
 						uni.switchTab({
-							url:"/pages/notice/notice"
+							url:"/pages/announcement/announcement"
 						})
 					},1500)
 				})

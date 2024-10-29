@@ -7,7 +7,7 @@
 			}
 		},
 		{
-			"path" : "pages/notice/notice",
+			"path" : "pages/announcement/announcement",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
@@ -40,7 +40,7 @@
 		"backgroundColor":"#ffffff",
 		"list": [
 			{
-				"pagePath": "pages/notice/notice",
+				"pagePath": "pages/announcement/announcement",
 				"iconPath": "static/images/tabbar_notice.png",
 				"selectedIconPath": "static/images/tabbar_notice_selected.png",
 				"text": "公告"
