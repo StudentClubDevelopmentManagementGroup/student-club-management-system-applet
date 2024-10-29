@@ -3,6 +3,9 @@
 
     <view class="header">
       <view class="search-bar">
+        <view class="filter-button">
+          <image src="./filter-icon.svg"></image>
+        </view>
         <input type="text" placeholder="请输入搜索内容" />
         <view class="search-button">
           <image src="./search-icon.svg"></image>
@@ -10,7 +13,9 @@
       </view>
     </view>
     
-    <view class="ann-list-header">公告信息</view>
+    <view class="ann-list-header">
+      <view>公告信息</view>
+    </view>
     <view class="ann-list">
       <view class="ann-list-item" v-for="ann in annList" :key="ann.id">
         <view class="ann-title display-1-line">{{ ann.title }}</view>
@@ -99,11 +104,19 @@
 
   .search-bar {
     display: flex;
-    gap: 0.8em;
+    justify-content: center;
+    gap: 0.6em;
     background-color: #ececec;
     padding: 0.8em 1.2em;
   }
 
+  .search-bar .filter-button image {
+    margin-left: -2px;
+    padding-top: 2px;
+    width: 1.4em;
+    height: 100%;
+  }
+  
   .search-bar input {
     flex: 1;
     padding: 0.4em 0.8em;
@@ -131,7 +144,6 @@
   }
 
   .ann-list-header {
-    content: "公告信息";
     padding: 0.4em 0.8em;
     font-size: 1.1em;
     font-weight: bolder;
