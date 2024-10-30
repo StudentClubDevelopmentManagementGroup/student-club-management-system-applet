@@ -7,11 +7,18 @@
 			}
 		},
 		{
-			"path" : "pages/announcement/announcement",
+			"path" : "pages/announcement/AnnList",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+		    "path" : "pages/announcement/AnnDetail",
+		    "style" : 
+		    {
+		        "navigationBarTitleText" : ""
+		    }
 		},
 		{
 			"path" : "pages/functionArea/functionArea",
@@ -40,7 +47,7 @@
 		"backgroundColor":"#ffffff",
 		"list": [
 			{
-				"pagePath": "pages/announcement/announcement",
+				"pagePath": "pages/announcement/AnnList",
 				"iconPath": "static/images/tabbar_notice.png",
 				"selectedIconPath": "static/images/tabbar_notice_selected.png",
 				"text": "公告"
