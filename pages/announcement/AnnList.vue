@@ -36,7 +36,8 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { onLoad } from '@dcloudio/uni-app';
+  import { ref } from 'vue';
   import http from '@/utils/http'
 
   let isLoading = ref(false)
@@ -75,13 +76,10 @@
     })
   }
 
-  onMounted(() => { loadMoreAnn() })
+  onLoad(() => { loadMoreAnn() })
 
   function clickAnn(ann) {
-    console.log(ann);
-    uni.navigateTo({
-      url: "/pages/announcement/AnnDetail"
-    })
+    uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
   }
 
 </script>

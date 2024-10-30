@@ -12,10 +12,11 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { onLoad } from '@dcloudio/uni-app';
+  import { ref } from 'vue';
   import http from '@/utils/http'
 
-  let annId = "1851197455137832961"; // <- tmp
+  let annId = "";
   let ann = ref({
     title:           "加载中... ",
     publish_time:    "加载中... ", /* <- 初始值也是很重要的 */
@@ -34,20 +35,24 @@
     content:         "加载失败..."
   }
 
-  function loadAnnDetail(){
+
+  function loadAnnDetail(annId){
+    if (annId == "") {
+      annDetail.value = annLoadErr
+      return
+    }
+
     http.get(`/club/announcement/read?announcementId=${annId}`)
     .then(res => {
       if (res.status_code != 200) {
         ann.value = annLoadErr
         return
       }
-
-      console.log(res)
       ann.value = res.data
     })
   }
   
-  onMounted(()=>{ loadAnnDetail() })
+  onLoad((params) => { loadAnnDetail(params.annId) })
 </script>
 
 <style scoped>
