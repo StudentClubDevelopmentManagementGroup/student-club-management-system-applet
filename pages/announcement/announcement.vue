@@ -16,8 +16,8 @@
     <view class="ann-list-header">
       <view>公告信息</view>
     </view>
-    <view class="ann-list">
-      <view class="ann-list-item" v-for="ann in annList" :key="ann.id">
+    <view class="ann-list" @click="clickAnn">
+      <view class="ann-list-item" v-for="ann in annList" :key="ann.announcement_id">
         <view class="ann-title display-1-line">{{ ann.title }}</view>
         <view class="ann-basic-info">
           <view class="display-1-line">时间：{{ ann.publish_time.split(" ")[0] }}</view>
@@ -76,6 +76,11 @@
   }
 
   onMounted(() => { loadMoreAnn() })
+
+  function clickAnn(e) {
+    console.log(e); // <- TODO
+    
+  }
 
 </script>
 
