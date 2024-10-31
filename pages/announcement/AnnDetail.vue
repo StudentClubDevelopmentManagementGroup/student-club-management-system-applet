@@ -1,58 +1,70 @@
 <template>
   <view class="main">
     <view class="ann-title">{{ ann.title }}</view>
-      <view class="ann-basic-info">
-        <view class="display-1-line">时间：{{ ann.publish_time.split(" ")[0] }}</view>
-        <view class="display-1-line">学院：{{ ann.department_name }}</view>
-        <view class="display-1-line">社团：{{ ann.club_name }}</view>
-        <view class="display-1-line">作者：{{ ann.author_name }}</view>
-      </view>
-    <view class="ann-content">{{ ann.content }}</view>
+    <view class="ann-basic-info">
+      <view class="display-1-line">时间：{{ ann.publish_time.split(" ")[0] }}</view>
+      <view class="display-1-line">学院：{{ ann.department_name }}</view>
+      <view class="display-1-line">社团：{{ ann.club_name }}</view>
+      <view class="display-1-line">作者：{{ ann.author_name }}</view>
+    </view>
+    <uParse class="ann-content" :content="ann.content"></uParse>
   </view>
 </template>
 
-<script setup>
-  import { onLoad } from '@dcloudio/uni-app';
-  import { ref } from 'vue';
-  import http from '@/utils/http'
+<script>
+/*  2024-10-30
+    富文本渲染组件 u-parse 暂不支持 vue3
+    本页面使用 vue2 语法
+*/
+import uParse from '@/components/u-parse/u-parse.vue' 
+import http from '@/utils/http'
 
-  let annId = "";
-  let ann = ref({
-    title:           "加载中... ",
-    publish_time:    "加载中... ", /* <- 初始值也是很重要的 */
-    department_name: "加载中... ",
-    club_name:       "加载中... ",
-    author_name:     "加载中... ",
-    content:         "加载中... "
-  })
+const annLoadErr = {
+  title:           "ERROR",  /* <- 加载失败时使用 */
+  publish_time:    "...",
+  department_name: "...",
+  club_name:       "...",
+  author_name:     "...",
+  content:         "加载失败..."
+}
 
-  const annLoadErr = {
-    title:           "ERROR",  /* <- 加载失败时使用 */
-    publish_time:    "...",
-    department_name: "...",
-    club_name:       "...",
-    author_name:     "...",
-    content:         "加载失败..."
-  }
+export default {
+  components: { uParse },
+  data () {
+    return {
+      ann: {
+        title:           "加载中... ",
+        publish_time:    "加载中... ", /* <- 初始值也是很重要的 */
+        department_name: "加载中... ",
+        club_name:       "加载中... ",
+        author_name:     "加载中... ",
+        content:         "加载中... "
+      }
+    }
+  },
 
+  onLoad (params) {
+    this.loadAnnDetail(params.annId)
+  },
 
-  function loadAnnDetail(annId){
+  methods: {
+    loadAnnDetail(annId) {
     if (annId == "") {
-      annDetail.value = annLoadErr
+      this.ann.value = annLoadErr
       return
     }
 
     http.get(`/club/announcement/read?announcementId=${annId}`)
     .then(res => {
       if (res.status_code != 200) {
-        ann.value = annLoadErr
+        this.ann = annLoadErr
         return
       }
-      ann.value = res.data
+      this.ann = res.data
     })
   }
-  
-  onLoad((params) => { loadAnnDetail(params.annId) })
+  }
+}
 </script>
 
 <style scoped>
@@ -93,6 +105,10 @@
   padding-bottom: 1em;
   color: #999;
   font-size: 0.8em;
+}
+
+.ann-content .strong {
+  font-weight: bolder;
 }
 
 </style>
