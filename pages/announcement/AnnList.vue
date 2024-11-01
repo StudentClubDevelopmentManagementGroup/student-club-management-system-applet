@@ -6,8 +6,8 @@
         <view class="filter-button" @click="showFilterPanel=true">
           <image src="./filter-icon.svg"></image>
         </view>
-        <input type="text" placeholder="请输入搜索内容" />
-        <view class="search-button">
+        <input type="text" placeholder="请输入搜索内容" v-model="inputText"/>
+        <view class="search-button" @click="clickSearchBtn()">
           <image src="./search-icon.svg"></image>
         </view>
       </view>
@@ -19,11 +19,18 @@
       <view class="filter-panel">
         <view>筛选项 1</view>
         <view>筛选项 2</view>
-        <view>筛选项 3</view>
-        <view>筛选项 4</view>
+        <view>待完成 ...</view>
+        <view>
+          <picker mode="date" value="{{searchFilter.dateFrom}}" bindchange="bindDateChange">
+            <view>
+              <text>起始时间</text>
+              <text>{{searchFilter.dateFrom}}</text>
+            </view>
+          </picker>
+        </view>
       </view>
     </view>
-    
+
     <view class="ann-list-header">
       <view>公告信息</view>
     </view>
@@ -39,7 +46,7 @@
         <view class="display-3-line">{{ ann.summary }}</view>
       </view>
       <view class="ann-list-load-more" @click="loadMoreAnn">
-        {{ isAllLoaded ? "已加载全部" : isLoading ? "加载中..." : "点击加载更多" }}
+        {{ isAllLoaded ? (pageNum == 1 ? "没有相关公告" : "已加载全部") : (isLoading ? "加载中..." : "点击加载更多") }}
       </view>
     </view>
 
@@ -55,8 +62,14 @@
   let isAllLoaded = ref(false)
 
   let annList = ref([])
-  let pageNum = 1
+  let pageNum = ref(1)
   const pageSize = 4
+
+  let showFilterPanel = ref(false)
+  let inputText = ref("")
+  let searchFilter = ref({
+    dateFrom: ""
+  })
 
   function loadMoreAnn() {
     if (isLoading.value || isAllLoaded.value)
@@ -65,7 +78,8 @@
     isLoading.value = true
 
     http.get("/club/announcement/search", {
-      page_num: pageNum,
+      title_keyword: inputText.value,
+      page_num: pageNum.value,
       page_size: pageSize
     })
     .then(res => {
@@ -80,7 +94,7 @@
       annList.value.push(...res.data.records)
 
       if (pageSize == res.data.records.length) {
-        pageNum += 1
+        pageNum.value += 1
       } else {
         isAllLoaded.value = true
       }
@@ -93,12 +107,15 @@
     uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
   }
 
-  let showFilterPanel = ref(false)
+  function clickSearchBtn() {
+    annList.value = []
+    pageNum.value = 1
+    isAllLoaded.value = false
 
-  function clickFilter() {
-    console.log('debug');
-    showFilterPanel.value = true;
+    inputText.value.trim()
+    loadMoreAnn()
   }
+
 </script>
 
 <style scoped>
