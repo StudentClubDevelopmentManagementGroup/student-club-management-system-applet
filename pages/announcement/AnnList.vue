@@ -3,13 +3,24 @@
 
     <view class="header">
       <view class="search-bar">
-        <view class="filter-button">
+        <view class="filter-button" @click="showFilterPanel=true">
           <image src="./filter-icon.svg"></image>
         </view>
         <input type="text" placeholder="请输入搜索内容" />
         <view class="search-button">
           <image src="./search-icon.svg"></image>
         </view>
+      </view>
+    </view>
+
+    <view class="filter-popup" v-if="showFilterPanel">
+      <!-- 2024-11-01 note: v-show 在微信小程序中无效，故这里用 v-if -->
+      <view class="filter-mask" @click="showFilterPanel=false"></view>
+      <view class="filter-panel">
+        <view>筛选项 1</view>
+        <view>筛选项 2</view>
+        <view>筛选项 3</view>
+        <view>筛选项 4</view>
       </view>
     </view>
     
@@ -82,6 +93,12 @@
     uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
   }
 
+  let showFilterPanel = ref(false)
+
+  function clickFilter() {
+    console.log('debug');
+    showFilterPanel.value = true;
+  }
 </script>
 
 <style scoped>
@@ -200,5 +217,30 @@
     width: fit-content;
     text-align: center;
     color: #999;
+  }
+
+  .filter-popup {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-popup .filter-mask {
+    height: 500rpx;
+    background-color: #000;
+    opacity: 0.5;
+  }
+
+  .filter-popup .filter-panel {
+    flex: 1;
+    padding: 0.8em;
+    background-color: #fff;
   }
 </style>
