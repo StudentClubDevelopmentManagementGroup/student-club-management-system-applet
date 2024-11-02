@@ -6,7 +6,7 @@
         <view class="filter-button" @click="showFilterPanel=true">
           <image src="./filter-icon.svg"></image>
         </view>
-        <input type="text" placeholder="请输入搜索内容" v-model="inputText"/>
+        <input type="text" placeholder="请输入搜索内容" v-model="searchFilter.titleKeyword"/>
         <view class="search-button" @click="clickSearchBtn()">
           <image src="./search-icon.svg"></image>
         </view>
@@ -17,17 +17,28 @@
       <!-- 2024-11-01 note: v-show 在微信小程序中无效，故这里用 v-if -->
       <view class="filter-mask" @click="showFilterPanel=false"></view>
       <view class="filter-panel">
-        <view>筛选项 1</view>
-        <view>筛选项 2</view>
-        <view>待完成 ...</view>
-        <view>
-          <picker mode="date" value="{{searchFilter.dateFrom}}" bindchange="bindDateChange">
-            <view>
-              <text>起始时间</text>
-              <text>{{searchFilter.dateFrom}}</text>
-            </view>
+
+        <view class="filter-panel-item">
+          <text class="item-name">院系</text>
+          123
+        </view>
+        
+        <view class="filter-panel-item">
+          <text class="item-name">社团</text>
+          123
+        </view>
+
+        <view class="filter-panel-item data-range">
+          <text class="item-name">日期</text>
+          <picker mode="date" :value="searchFilter.dateFrom" @change="changeDateFrom">
+            <text>{{ searchFilter.dateFrom || '开始日期' }}</text>
+          </picker>
+          <text>至</text>
+          <picker mode="date" :value="searchFilter.dateTo" @change="changeDateTo">
+            <text>{{ searchFilter.dateTo || '结束日期' }}</text>
           </picker>
         </view>
+
       </view>
     </view>
 
@@ -45,8 +56,8 @@
         </view>
         <view class="display-3-line">{{ ann.summary }}</view>
       </view>
-      <view class="ann-list-load-more" @click="loadMoreAnn">
-        {{ isAllLoaded ? (pageNum == 1 ? "没有相关公告" : "已加载全部") : (isLoading ? "加载中..." : "点击加载更多") }}
+      <view class="ann-list-load-more" @click="loadAnn">
+        {{ isAllLoaded ? (searchFilter.pageNum == 1 ? "没有相关公告" : "已加载全部") : (isLoading ? "加载中..." : "点击加载更多") }}
       </view>
     </view>
 
@@ -62,25 +73,27 @@
   let isAllLoaded = ref(false)
 
   let annList = ref([])
-  let pageNum = ref(1)
   const pageSize = 4
 
   let showFilterPanel = ref(false)
-  let inputText = ref("")
+
   let searchFilter = ref({
-    dateFrom: ""
+    titleKeyword: "",
+    dateFrom: "",
+    dateTo: "",
+    pageNum: 1,
   })
 
-  function loadMoreAnn() {
+  function loadAnn() {
     if (isLoading.value || isAllLoaded.value)
       return
 
     isLoading.value = true
 
     http.get("/club/announcement/search", {
-      title_keyword: inputText.value,
-      page_num: pageNum.value,
-      page_size: pageSize
+      title_keyword: searchFilter.value.titleKeyword.trim(),
+      page_num:      searchFilter.value.pageNum,
+      page_size:     pageSize
     })
     .then(res => {
 
@@ -94,14 +107,14 @@
       annList.value.push(...res.data.records)
 
       if (pageSize == res.data.records.length) {
-        pageNum.value += 1
+        searchFilter.value.pageNum += 1
       } else {
         isAllLoaded.value = true
       }
     })
   }
 
-  onLoad(() => { loadMoreAnn() })
+  onLoad(() => { loadAnn() })
 
   function clickAnn(ann) {
     uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
@@ -109,13 +122,23 @@
 
   function clickSearchBtn() {
     annList.value = []
-    pageNum.value = 1
+    searchFilter.value.pageNum = 1
     isAllLoaded.value = false
 
-    inputText.value.trim()
-    loadMoreAnn()
+    loadAnn()
   }
 
+  function changeDateFrom(e) {
+    console.log(e);
+    
+    searchFilter.value.dateFrom = e.detail.value
+  }
+
+  function changeDateTo(e) {
+    console.log(e);
+    
+    searchFilter.value.dateTo = e.detail.value
+  }
 </script>
 
 <style scoped>
@@ -132,6 +155,8 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
+
+  /* -------- */
 
   .main {
     position: absolute;
@@ -181,6 +206,8 @@
     width: 1.4em;
     height: 1.4em;
   }
+  
+  /* -------- */
 
   .ann-list-header {
     padding: 0.4em 0.8em;
@@ -235,6 +262,8 @@
     text-align: center;
     color: #999;
   }
+  
+  /* -------- */
 
   .filter-popup {
     position: absolute;
@@ -259,5 +288,24 @@
     flex: 1;
     padding: 0.8em;
     background-color: #fff;
+  }
+
+  .filter-popup .filter-panel .filter-panel-item {
+    margin: 1.5em 0;
+    display: flex;
+  }
+
+  /* -------- */
+
+  .filter-panel-item .item-name {
+    width: 3em;
+    font-weight: bolder;
+  }
+
+  .filter-panel-item.data-range picker {
+    flex: 1;
+    margin: 0 0.3em;
+    text-align: center;
+    border: 1px solid #666;
   }
 </style>
