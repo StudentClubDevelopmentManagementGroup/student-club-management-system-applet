@@ -17,6 +17,7 @@
       <!-- 2024-11-01 note: v-show 在微信小程序中无效，故这里用 v-if -->
       <view class="filter-mask" @click="showFilterPanel=false"></view>
       <view class="filter-panel">
+        <text class="item-name">设置筛选条件</text>
 
         <view class="filter-panel-item">
           <text class="item-name">院系</text>
@@ -56,7 +57,7 @@
         </view>
         <view class="display-3-line">{{ ann.summary }}</view>
       </view>
-      <view class="ann-list-load-more" @click="loadAnn">
+      <view class="ann-list-load-more" @click="loadNextPageAnn">
         {{ isAllLoaded ? (searchFilter.pageNum == 1 ? "没有相关公告" : "已加载全部") : (isLoading ? "加载中..." : "点击加载更多") }}
       </view>
     </view>
@@ -84,14 +85,38 @@
     pageNum: 1,
   })
 
-  function loadAnn() {
+  function validateDateRange() {
+
+    const dateTo   = searchFilter.value.dateTo
+    const dateFrom = searchFilter.value.dateFrom
+
+    if ( ! dateTo && ! dateFrom)
+      return true
+
+    const today    = new Date()
+    const toDate   = dateTo   ? new Date(dateTo)   : today
+    const fromDate = dateFrom ? new Date(dateFrom) : toDate
+
+    if ( ! (fromDate <= toDate && toDate <= today)) {
+      uni.showToast({ title: "筛选条件日期不合法", icon: "none" })
+      return false
+    }
+
+    return true
+  }
+
+  function loadNextPageAnn(clearAll=false) {
     if (isLoading.value || isAllLoaded.value)
+      return
+    if ( ! validateDateRange())
       return
 
     isLoading.value = true
 
     http.get("/club/announcement/search", {
       title_keyword: searchFilter.value.titleKeyword.trim(),
+      from_date:     searchFilter.value.dateFrom,
+      to_date:       searchFilter.value.dateTo,
       page_num:      searchFilter.value.pageNum,
       page_size:     pageSize
     })
@@ -104,6 +129,9 @@
         return
       }
 
+      if (clearAll)
+        annList.value = []
+
       annList.value.push(...res.data.records)
 
       if (pageSize == res.data.records.length) {
@@ -114,29 +142,24 @@
     })
   }
 
-  onLoad(() => { loadAnn() })
+  onLoad(() => { loadNextPageAnn() })
 
   function clickAnn(ann) {
     uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
   }
 
   function clickSearchBtn() {
-    annList.value = []
     searchFilter.value.pageNum = 1
     isAllLoaded.value = false
 
-    loadAnn()
+    loadNextPageAnn(true)
   }
 
   function changeDateFrom(e) {
-    console.log(e);
-    
     searchFilter.value.dateFrom = e.detail.value
   }
 
   function changeDateTo(e) {
-    console.log(e);
-    
     searchFilter.value.dateTo = e.detail.value
   }
 </script>
