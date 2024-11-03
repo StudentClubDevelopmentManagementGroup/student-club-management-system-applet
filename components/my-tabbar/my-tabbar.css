@@ -1,7 +1,7 @@
 .tabbar{
-	--selected-color:#0272af;
-	--color:#ffffff;
-	--tabbar--height:50px;
+	--selected-color: #0272af;
+	--color: #ffffff;
+	--tabbar--height: 50px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -36,7 +36,7 @@
 }
 
 .midButton{
-	--height:64px;
+	--height: 64px;
 	position: absolute;
 	bottom: calc(50% - 7px) ;
 	width: 64px;

@@ -2,6 +2,9 @@
 	<view>
 		notice
 	</view>
+	<!--
+	<my-tabbar currentPagePath="/pages/notice/notice"></my-tabbar>
+	-->
 </template>
 
 <script>
