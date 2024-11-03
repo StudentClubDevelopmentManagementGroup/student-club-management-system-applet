@@ -4,15 +4,21 @@
 
     <view class="header">
       <view class="search-bar">
+        <view class="filter-button">
+          <image src="./filter-icon.svg"></image>
+        </view>
         <input type="text" placeholder="请输入搜索内容" />
         <view class="search-button">
           <image src="./search-icon.svg"></image>
         </view>
       </view>
     </view>
-
+    
+    <view class="ann-list-header">
+      <view>公告信息</view>
+    </view>
     <view class="ann-list">
-      <view class="ann-list-item" v-for="ann in annList" :key="ann.id">
+      <view class="ann-list-item" @click="clickAnn(ann)" v-for="ann in annList" :key="ann.announcement_id">
         <view class="ann-title display-1-line">{{ ann.title }}</view>
         <view class="ann-basic-info">
           <view class="display-1-line">时间：{{ ann.publish_time.split(" ")[0] }}</view>
@@ -22,7 +28,9 @@
         </view>
         <view class="display-3-line">{{ ann.summary }}</view>
       </view>
-      <view class="ann-list-footer" @click="test">点击加载更多</view>
+      <view class="ann-list-load-more" @click="loadMoreAnn">
+        {{ isAllLoaded ? "已加载全部" : isLoading ? "加载中..." : "点击加载更多" }}
+      </view>
     </view>
 
   </view>
@@ -30,19 +38,50 @@
 </template>
 
 <script setup>
+  import { onLoad } from '@dcloudio/uni-app';
   import { ref } from 'vue';
   import http from '@/utils/http'
 
-  let annList = ref([])
+  let isLoading = ref(false)
+  let isAllLoaded = ref(false)
 
-  function test() {
+  let annList = ref([])
+  let pageNum = 1
+  const pageSize = 4
+
+  function loadMoreAnn() {
+    if (isLoading.value || isAllLoaded.value)
+      return
+
+    isLoading.value = true
+
     http.get("/club/announcement/search", {
-      page_num: 1,
-      page_size: 10
+      page_num: pageNum,
+      page_size: pageSize
     })
     .then(res => {
+
+      isLoading.value = false
+
+      if (res.status_code !== 200) {
+        uni.showToast({ title: "加载失败", icon: "none" })
+        return
+      }
+
       annList.value.push(...res.data.records)
+
+      if (pageSize == res.data.records.length) {
+        pageNum += 1
+      } else {
+        isAllLoaded.value = true
+      }
     })
+  }
+
+  onLoad(() => { loadMoreAnn() })
+
+  function clickAnn(ann) {
+    uni.navigateTo({ url: `/pages/announcement/AnnDetail?annId=${ann.announcement_id}` })
   }
 
 </script>
@@ -70,20 +109,28 @@
     height: 100%;
   }
 
-  .header .search-bar {
+  .search-bar {
     display: flex;
-    gap: 0.8em;
+    justify-content: center;
+    gap: 0.6em;
     background-color: #ececec;
     padding: 0.8em 1.2em;
   }
 
-  .header .search-bar input {
+  .search-bar .filter-button image {
+    margin-left: -2px;
+    padding-top: 2px;
+    width: 1.4em;
+    height: 100%;
+  }
+  
+  .search-bar input {
     flex: 1;
     padding: 0.4em 0.8em;
     background-color: #fff;
   }
 
-  .header .search-bar .search-button {
+  .search-bar .search-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -93,19 +140,17 @@
     border-radius: 4px;
   }
 
-  .header .search-bar .search-button:active {
+  .search-bar .search-button:active {
     background-color: #2089c2;
   }
 
-  .header .search-bar .search-button image {
+  .search-bar .search-button image {
     padding: 4px 0 0 2px;
     width: 1.4em;
     height: 1.4em;
   }
 
-  .header::after {
-    content: "公告信息";
-    display: block;
+  .ann-list-header {
     padding: 0.4em 0.8em;
     font-size: 1.1em;
     font-weight: bolder;
@@ -149,7 +194,7 @@
     border-bottom: 1px solid #ddd;
   }
 
-  .ann-list .ann-list-footer {
+  .ann-list .ann-list-load-more {
     position: relative;
     top: -1em;
     padding: 1em;

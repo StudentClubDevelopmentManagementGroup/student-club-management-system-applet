@@ -150,7 +150,7 @@
 				this.app.globalData.userData = tools.changeNameFromLowerSnakeToCamel(res.data)
 				setTimeout(()=>{
 					uni.switchTab({
-						url:"/pages/notice/notice"
+						url:"/pages/announcement/AnnList"
 					})
 				},1500)
 			},
