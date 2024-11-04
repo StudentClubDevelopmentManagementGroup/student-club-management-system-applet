@@ -6,7 +6,7 @@
         <view class="filter-button" @click="showFilterPanel=true">
           <image src="./filter-icon.svg"></image>
         </view>
-        <input type="text" placeholder="请输入搜索内容" v-model="searchFilter.titleKeyword"/>
+        <input type="text" placeholder="请输入标题关键字" v-model="searchFilter.titleKeyword"/>
         <view class="search-button" @click="clickSearchBtn()">
           <image src="./search-icon.svg"></image>
         </view>
@@ -19,6 +19,17 @@
       <view class="filter-panel">
         <text class="item-name">设置筛选条件</text>
 
+        <view class="filter-panel-item data-range">
+          <text class="item-name">日期</text>
+          <picker mode="date" :value="searchFilter.dateFrom" @change="changeDateFrom">
+            <text>{{ searchFilter.dateFrom || '开始日期' }}</text>
+          </picker>
+          <text style="margin: 0 0.5em;">至</text>
+          <picker mode="date" :value="searchFilter.dateTo" @change="changeDateTo">
+            <text>{{ searchFilter.dateTo || '结束日期' }}</text>
+          </picker>
+        </view>
+        
         <view class="filter-panel-item">
           <text class="item-name">院系</text>
           123
@@ -29,15 +40,10 @@
           123
         </view>
 
-        <view class="filter-panel-item data-range">
-          <text class="item-name">日期</text>
-          <picker mode="date" :value="searchFilter.dateFrom" @change="changeDateFrom">
-            <text>{{ searchFilter.dateFrom || '开始日期' }}</text>
-          </picker>
-          <text>至</text>
-          <picker mode="date" :value="searchFilter.dateTo" @change="changeDateTo">
-            <text>{{ searchFilter.dateTo || '结束日期' }}</text>
-          </picker>
+        <view class="filter-panel-item buttons">
+          <button style="position: absolute; right: 3em; padding: 0.5em 1em; line-height: 1em; background-color: #efefef"
+            @click="resetFilter"
+          >重置</button>
         </view>
 
       </view>
@@ -70,12 +76,6 @@
   import { ref } from 'vue';
   import http from '@/utils/http'
 
-  let isLoading = ref(false)
-  let isAllLoaded = ref(false)
-
-  let annList = ref([])
-  const pageSize = 4
-
   let showFilterPanel = ref(false)
 
   let searchFilter = ref({
@@ -84,6 +84,14 @@
     dateTo: "",
     pageNum: 1,
   })
+
+  function changeDateFrom(e) { searchFilter.value.dateFrom = e.detail.value }
+  function changeDateTo(e) { searchFilter.value.dateTo = e.detail.value }
+
+  function resetFilter() {
+    searchFilter.value.dateFrom = ""
+    searchFilter.value.dateTo   = ""
+  }
 
   function validateDateRange() {
 
@@ -105,6 +113,12 @@
     return true
   }
 
+  let isLoading = ref(false)
+  let isAllLoaded = ref(false)
+
+  let annList = ref([])
+  const pageSize = 4
+
   function loadNextPageAnn(clearAll=false) {
     if (isLoading.value || isAllLoaded.value)
       return
@@ -114,11 +128,11 @@
     isLoading.value = true
 
     http.get("/club/announcement/search", {
-      title_keyword: searchFilter.value.titleKeyword.trim(),
-      from_date:     searchFilter.value.dateFrom,
-      to_date:       searchFilter.value.dateTo,
-      page_num:      searchFilter.value.pageNum,
-      page_size:     pageSize
+      title_keyword : searchFilter.value.titleKeyword.trim(),
+      from_date     : searchFilter.value.dateFrom,
+      to_date       : searchFilter.value.dateTo,
+      page_num      : searchFilter.value.pageNum,
+      page_size     : pageSize
     })
     .then(res => {
 
@@ -153,14 +167,6 @@
     isAllLoaded.value = false
 
     loadNextPageAnn(true)
-  }
-
-  function changeDateFrom(e) {
-    searchFilter.value.dateFrom = e.detail.value
-  }
-
-  function changeDateTo(e) {
-    searchFilter.value.dateTo = e.detail.value
   }
 </script>
 
@@ -325,9 +331,11 @@
     font-weight: bolder;
   }
 
+  .filter-panel-item.data-range {
+    line-height: 1.8em;
+  }
   .filter-panel-item.data-range picker {
     flex: 1;
-    margin: 0 0.3em;
     text-align: center;
     border: 1px solid #666;
   }
