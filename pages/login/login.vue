@@ -15,7 +15,7 @@
 					<input type="password" v-model="pwd" maxlength="512" placeholder="请输入密码" />
 				</view>
 				<view class="function-area">
-					<text id="t3" @click="developing()">免费注册</text>
+					<text id="t3" @click="gotoRegisterPage()">免费注册</text>
 					<text id="t4" @click="developing()">忘记密码？</text>
 				</view>
 				<!-- <my-button :isLoading="isLoading" :text="new String(`登 录`)" class="button" @click="loginByAccount()">登 录></my-button> -->
@@ -153,6 +153,11 @@
 						url:"/pages/announcement/AnnList"
 					})
 				},1500)
+			},
+			gotoRegisterPage(){
+				uni.navigateTo({
+					url:"/pages/register/register"
+				})
 			},
 			startInterval(){
 				this.countdownInstantiate = setInterval(()=>{

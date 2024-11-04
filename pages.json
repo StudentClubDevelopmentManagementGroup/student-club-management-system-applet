@@ -37,6 +37,13 @@
 				"navigationBarBackgroundColor": "#0272af",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path" : "pages/register/register",
+			"style" : 
+			{
+				"navigationBarTitleText" : "注册页面"
+			}
 		}
 	],
 
