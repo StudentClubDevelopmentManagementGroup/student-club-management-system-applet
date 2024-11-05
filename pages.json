@@ -37,6 +37,13 @@
 				"navigationBarBackgroundColor": "#0272af",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path" : "pages/report-bug/ReportBug",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
 	],
 
