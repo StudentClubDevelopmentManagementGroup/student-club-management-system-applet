@@ -74,7 +74,7 @@
 				return
 			},
 			reportBug() {
-				uni.reLaunch({
+				uni.nevigateTo({
 					url: "/pages/report-bug/ReportBug"
 				})
 			}
