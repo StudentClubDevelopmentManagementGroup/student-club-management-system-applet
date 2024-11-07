@@ -40,10 +40,14 @@
           123
         </view>
 
-        <view class="filter-panel-item buttons">
-          <button style="position: absolute; right: 3em; padding: 0.5em 1em; line-height: 1em; background-color: #efefef"
+        <view class="filter-panel-item buttons" style="
+        display: flex; flex-direction: row-reverse; padding-left: 40%; padding-right: 5%;">
+          <button style="line-height: 2em; background-color: #efefef"
             @click="resetFilter"
           >重置</button>
+          <button style="line-height: 2em; background-color: #2089c2; color: #fff;"
+            @click="resetFilter"
+          >完成</button>
         </view>
 
       </view>
