@@ -30,24 +30,22 @@
           </picker>
         </view>
         
+        <!--
         <view class="filter-panel-item">
           <text class="item-name">院系</text>
-          123
+          TODO
         </view>
         
         <view class="filter-panel-item">
           <text class="item-name">社团</text>
-          123
+          TODO
         </view>
+        -->
 
         <view class="filter-panel-item buttons" style="
         display: flex; flex-direction: row-reverse; padding-left: 40%; padding-right: 5%;">
-          <button style="line-height: 2em; background-color: #efefef"
-            @click="resetFilter"
-          >重置</button>
-          <button style="line-height: 2em; background-color: #2089c2; color: #fff;"
-            @click="resetFilter"
-          >完成</button>
+          <button style="line-height: 2em; background-color: #efefef" @click="clickResetFilterBtn">重置</button>
+          <button style="line-height: 2em; background-color: #2089c2; color: #fff;" @click="clickFinishFilterBtn">完成</button>
         </view>
 
       </view>
@@ -92,9 +90,14 @@
   function changeDateFrom(e) { searchFilter.value.dateFrom = e.detail.value }
   function changeDateTo(e) { searchFilter.value.dateTo = e.detail.value }
 
-  function resetFilter() {
+  function clickResetFilterBtn() {
     searchFilter.value.dateFrom = ""
     searchFilter.value.dateTo   = ""
+  }
+
+  function clickFinishFilterBtn() {
+    showFilterPanel.value = false
+    clickSearchBtn()
   }
 
   function validateDateRange() {
