@@ -6,7 +6,7 @@
         </div>
 	
 	<div id="seat-container" :style="seatContainerStyle">
-      <div id="seat-layout">
+      <div id="seat-layout" :style="seatLayoutStyle">
         <div 
           class="seat" 
           v-for="seat in seats" 
@@ -64,9 +64,9 @@ export default {
       // 计算座位表的大小
       const width = this.seatMaxX - this.seatMinX;
       const height = this.seatMaxY - this.seatMinY;
-
+	  
       // 设置容器大小，留有一些边距
-      this.containerWidth = width + 50;  // 缩小边距，避免过多的空间
+      this.containerWidth = width;  // 缩小边距，避免过多的空间
       this.containerHeight = height + 50; // 留出一定的上下边距
 
       // 更新容器的中心位置
@@ -77,7 +77,7 @@ export default {
       return {
         position: 'absolute',
         // 平移到容器中心
-        left: `${seat.x - this.centerX + this.containerWidth / 2}px`, 
+        left: `${seat.x - this.centerX + this.containerWidth / 2 }px`, 
         top: `${seat.y - this.centerY + this.containerHeight / 2}px`, 
         width: '75px',
         height: '55px',
@@ -94,11 +94,20 @@ export default {
     seatContainerStyle() {
       return {
         position: 'relative',
-        width: `${this.containerWidth}px`,
-        height: `${this.containerHeight}px`,
+        width: `95vw`,
+        height: `80%`,
         margin: '0 auto',  // 居中显示
       };
-    }
+    },
+	
+	seatLayoutStyle(){
+		console.log(this.containerWidth)
+		return {
+			position: 'relative',
+			width: `${this.containerWidth}px`,
+			height: `${ this.containerHeight}px`
+		};
+	}
   }
 };
 </script>

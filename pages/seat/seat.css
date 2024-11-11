@@ -26,11 +26,7 @@
   box-sizing: border-box;
 }
 
-#seat-layout {
-  position: relative;
-  width: 2000px; /* 假设座位布局宽度为2000px，调整为实际需要的值 */
-  height: 1200px; /* 假设座位布局高度为1200px，调整为实际需要的值 */
-}
+
 
 .seat {
   display: flex;
