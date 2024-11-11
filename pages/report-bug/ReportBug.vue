@@ -1,41 +1,28 @@
 <template>
   <view class="container">
-    <view class="form-group">
+    <view>
       <text class="label">标题</text>
-      <input
-        class="input"
-        type="text"
-        placeholder="请简述 Bug"
-      />
+      <input class="input" type="text" placeholder="请简述 Bug"/>
     </view>
     
-    <view class="form-group">
+    <view>
       <text class="label">描述</text>
-      <textarea
-        class="textarea"
-        placeholder="请详细描述问题"
-      ></textarea>
-      <text class="error" v-if="errors.description">{{ errors.description }}</text>
+      <textarea class="textarea" maxlength="2000" placeholder="请详细描述问题"></textarea>
     </view>
     
-    <view class="form-group">
+    <view>
       <text class="label">截图</text>
       <view class="upload-box" @tap="chooseImage">
         <view>点击上传截图</view>
       </view>
     </view>
     
-    <view class="form-group">
+    <view>
       <text class="label">联系方式</text>
-      <input
-        class="input"
-        type="text"
-        placeholder="请输入联系方式"
-        v-model="feedback.contact"
-      />
+      <input class="input" type="text" placeholder="请输入联系方式"/>
     </view>
     
-    <button>提交</button>
+    <button class=".submit-button">提交</button>
   </view>
 </template>
 
@@ -45,63 +32,45 @@
 
 <style>
 .container {
-  padding: 20rpx;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
-.title {
-  font-size: 36rpx;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 30rpx;
-}
-.form-group {
-  margin-bottom: 20rpx;
-}
+
 .label {
-  font-size: 28rpx;
-  margin-bottom: 10rpx;
+  font-size: 1em;
+  line-height: 2em;
   display: block;
 }
+
 .input, .textarea {
-  width: 100%;
-  padding: 10rpx;
+  width: inherit;
+  padding: 0.2em;
   border: 1px solid #ccc;
-  border-radius: 8rpx;
-  font-size: 28rpx;
+  border-radius: 4px;
+  font-size: 1em;
 }
+
 .textarea {
-  height: 150rpx;
-  resize: none;
+  height: 15em;
 }
-.error {
-  color: red;
-  font-size: 24rpx;
-  margin-top: 5rpx;
-}
+
 .upload-box {
-  width: 100%;
-  height: 200rpx;
+  width: inherit;
+  height: 6em;
   border: 1px dashed #ccc;
-  border-radius: 8rpx;
+  border-radius: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 10rpx;
 }
-.placeholder {
-  color: #aaa;
-}
-.screenshot {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+
 .submit-button {
   width: 100%;
-  background-color: #007aff;
+  margin-top: 1em;
+  background-color: #2089c2;
   color: #fff;
-  font-size: 28rpx;
   text-align: center;
-  padding: 15rpx;
-  border-radius: 8rpx;
 }
 </style>
