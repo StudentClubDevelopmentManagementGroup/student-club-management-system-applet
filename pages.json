@@ -44,6 +44,12 @@
 			{
 				"navigationBarTitleText" : "注册页面"
 			}
+		},
+		{
+			"path": "pages/seat/seat",
+			"style": {
+				"navigationBarTitleText": "座位表"
+			}
 		}
 	],
 
