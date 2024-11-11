@@ -1,0 +1,105 @@
+.main-content {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
+	width: 100%;
+	background-size: cover;
+	z-index: 1;
+}
+
+.header {
+	display: block;
+	background-size: cover;
+	height: 140px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+#t1 {
+	flex: 1;
+	font-size: 26px;
+	font-weight: bolder;
+	color: white;
+	background-color: #0272af77;
+	padding-left: 20px;
+	padding-top: 30px;
+
+}
+
+#t2 {
+	flex: 1;
+	font-size: 15.5px;
+	font-weight: bolder;
+	color: white;
+	background-color: #0272af77;
+	padding-left: 20px;
+	padding-top: 30px;
+}
+
+.body{
+	display: flex;
+	flex-direction: column;
+	margin-top: 40px;
+	width: 85vw;
+	align-self: center;
+}
+.body .item{
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 8px;
+	height: 32px;
+	border-bottom: 2px solid black;
+}
+.body .item image{
+	width: 24px;
+	height: 24px;
+	margin-right: 8px;
+}
+.body .item input{
+	flex: 1;
+}
+
+
+.department picker{
+	width: 100%;
+}
+.department picker text{
+	color: gray;
+}
+
+#veriCode{
+	border-bottom: none;
+}
+
+#veriCode-left{
+	display: flex;
+	width: 50%;
+	padding-bottom: 4px;
+	border-bottom: 2px solid black;
+}
+#veriCode-right{
+	height: 28px;
+	width: 35%;
+	line-height: 28px;
+	font-size: small;
+	background-color: #1a62ff;
+	color: white;
+}
+#veriCode-right.disable{
+	background-color:gray;
+	pointer-events: none;
+}
+
+#register{
+	margin-top: 16px;
+	height: 35px;
+	line-height: 35px;
+	width: 85%;
+	background-color: #0272af;
+	color:white;
+}

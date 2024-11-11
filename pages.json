@@ -7,11 +7,18 @@
 			}
 		},
 		{
-			"path" : "pages/notice/notice",
+			"path" : "pages/announcement/AnnList",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+		    "path" : "pages/announcement/AnnDetail",
+		    "style" : 
+		    {
+		        "navigationBarTitleText" : ""
+		    }
 		},
 		{
 			"path" : "pages/functionArea/functionArea",
@@ -30,6 +37,13 @@
 				"navigationBarBackgroundColor": "#0272af",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path" : "pages/register/register",
+			"style" : 
+			{
+				"navigationBarTitleText" : "注册页面"
+			}
 		}
 	],
 
@@ -40,7 +54,7 @@
 		"backgroundColor":"#ffffff",
 		"list": [
 			{
-				"pagePath": "pages/notice/notice",
+				"pagePath": "pages/announcement/AnnList",
 				"iconPath": "static/images/tabbar_notice.png",
 				"selectedIconPath": "static/images/tabbar_notice_selected.png",
 				"text": "公告"

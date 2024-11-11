@@ -35,6 +35,9 @@
 			</view>
 		</view>
 	</view>
+	<!--
+	<my-tabbar currentPagePath="/pages/functionArea/functionArea"></my-tabbar>
+	-->
 </template>
 
 <script>

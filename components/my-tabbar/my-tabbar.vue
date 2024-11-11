@@ -19,7 +19,7 @@
 				midButtonIcon:{
 					"pagePath": "/pages/functionArea/functionArea",
 					"iconPath": "../../static/images/tabbar_function.png",
-					"selectedIconPath": "../../static/images/tabbar_function_selected.png",
+					"selectedIconPath": "../../static/images/tabbar_function_selected (2).png",
 				},
 				list:[
 					{
