@@ -2,7 +2,13 @@
   <view id="main-content" style="background-image: url('/static/images/背景.jpg');">
     <!-- 选择社团的部分 -->
         <div id="club-selection">
-          <p>选择社团</p>
+          <p v-if="clubs.length > 1">选择社团</p>
+          <select v-if="clubs.length > 1" v-model="selectedClubId" @change="fetchSeats">
+            <option v-for="club in clubs" :key="club.club_id" :value="club.club_id">
+              {{ club.club_name }}
+            </option>
+          </select>
+          <p v-else>您所在的社团：{{ clubs[0]?.club_name }}</p>
         </div>
 	
 	<div id="seat-container" :style="seatContainerStyle">
@@ -28,21 +34,40 @@ export default {
   data() {
     return {
       seats: [],
+	  clubs: [],
+	  selectedClubId: null,
       containerWidth: 0,  // 画布宽度
       containerHeight: 0, // 画布高度
       seatMinX: 0,        // 座位表的最小X坐标
       seatMaxX: 0,        // 座位表的最大X坐标
       seatMinY: 0,        // 座位表的最小Y坐标
-      seatMaxY: 0         // 座位表的最大Y坐标
+      seatMaxY: 0         ,// 座位表的最大Y坐标
+	  
     };
   },
   mounted() {
-    this.fetchSeats();
+    this.fetchClubs();
   },
   methods: {
+	  fetchClubs() {
+	        // 获取所有社团信息
+	        http.post('/club/member/select_Myself_all_club_info', {
+	        })
+	        .then(res => {
+	          this.clubs = res.data;
+	          if (this.clubs.length === 1) {
+	            // 只有一个社团时，直接设置选中的社团ID
+	            this.selectedClubId = this.clubs[0].club_id;
+	            this.fetchSeats();  // 获取座位信息
+	          }
+	        })
+	        .catch(error => {
+	          console.error('Error fetching clubs:', error);
+	        });
+	      },
     fetchSeats() {
       http.get('/club/seat/view', {
-      	club_id: 36
+      	club_id: this.selectedClubId
       })
       .then(res => {
         this.seats = res.data;
