@@ -24,7 +24,7 @@
 				<image src="../../static/svgs/functionArea_info.svg"></image>
 			</view>
 			<view class="content-body">
-				<view class="item" @click="developing()">
+				<view class="item" @click="gotoMainPage()">
 					<image style="width: 40px; height: 40px; padding: 12px;	background-color: #9f92f2;" src="/static/svgs/functionArea_座位.svg"></image>
 					<text style="color: #9f92f2;">座位表</text>	
 				</view>
@@ -55,6 +55,11 @@
 					icon:"none"
 				})
 				return
+			},
+			gotoMainPage(){
+				uni.navigateTo({
+					url:"/pages/seat/seat"
+				})
 			}
 		}
 	}

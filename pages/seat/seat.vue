@@ -1,17 +1,21 @@
 <template>
   <view id="main-content" style="background-image: url('/static/images/背景.jpg');">
     <!-- 选择社团的部分 -->
-        <div id="club-selection">
-          <p v-if="clubs.length > 1">选择社团</p>
-          <select v-if="clubs.length > 1" v-model="selectedClubId" @change="fetchSeats">
-            <option v-for="club in clubs" :key="club.club_id" :value="club.club_id">
-              {{ club.club_name }}
-            </option>
-          </select>
-          <p v-else>您所在的社团：{{ clubs[0]?.club_name }}</p>
-        </div>
+    <div id="club-selection">
+      <p v-if="clubs.length === 0">你还没有加入社团</p>
+      <div v-else>
+        <p v-if="clubs.length > 1">选择社团</p>
+        <select v-if="clubs.length > 1" v-model="selectedClubId" @change="fetchSeats">
+          <option v-for="club in clubs" :key="club.club_id" :value="club.club_id">
+            {{ club.club_name }}
+          </option>
+        </select>
+        <p v-else>您所在的社团：{{ clubs[0]?.club_name }}</p>
+      </div>
+    </div>
 	
-	<div id="seat-container" :style="seatContainerStyle">
+    <!-- 座位布局部分 -->
+    <div id="seat-container" :style="seatContainerStyle" v-if="clubs.length > 0">
       <div id="seat-layout" :style="seatLayoutStyle">
         <div 
           class="seat" 
@@ -34,40 +38,42 @@ export default {
   data() {
     return {
       seats: [],
-	  clubs: [],
-	  selectedClubId: null,
+      clubs: [],
+      selectedClubId: null,
       containerWidth: 0,  // 画布宽度
       containerHeight: 0, // 画布高度
       seatMinX: 0,        // 座位表的最小X坐标
       seatMaxX: 0,        // 座位表的最大X坐标
       seatMinY: 0,        // 座位表的最小Y坐标
-      seatMaxY: 0         ,// 座位表的最大Y坐标
-	  
+      seatMaxY: 0,        // 座位表的最大Y坐标
     };
   },
   mounted() {
     this.fetchClubs();
   },
   methods: {
-	  fetchClubs() {
-	        // 获取所有社团信息
-	        http.post('/club/member/select_Myself_all_club_info', {
-	        })
-	        .then(res => {
-	          this.clubs = res.data;
-	          if (this.clubs.length === 1) {
-	            // 只有一个社团时，直接设置选中的社团ID
-	            this.selectedClubId = this.clubs[0].club_id;
-	            this.fetchSeats();  // 获取座位信息
-	          }
-	        })
-	        .catch(error => {
-	          console.error('Error fetching clubs:', error);
-	        });
-	      },
+    fetchClubs() {
+      // 获取所有社团信息
+      http.post('/club/member/select_Myself_all_club_info', {})
+        .then(res => {
+          this.clubs = res.data;
+		  if(res.data=="查无对象")
+		  {
+			  this.clubs=[]
+		  }
+          if (this.clubs.length === 1) {
+            // 只有一个社团时，直接设置选中的社团ID
+            this.selectedClubId = this.clubs[0].club_id;
+            this.fetchSeats();  // 获取座位信息
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching clubs:', error);
+        });
+    },
     fetchSeats() {
       http.get('/club/seat/view', {
-      	club_id: this.selectedClubId
+        club_id: this.selectedClubId
       })
       .then(res => {
         this.seats = res.data;
@@ -91,8 +97,8 @@ export default {
       const height = this.seatMaxY - this.seatMinY;
 	  
       // 设置容器大小，留有一些边距
-      this.containerWidth = width;  // 缩小边距，避免过多的空间
-      this.containerHeight = height + 50; // 留出一定的上下边距
+      this.containerWidth = width;
+      this.containerHeight = height + 50;
 
       // 更新容器的中心位置
       this.centerX = (this.seatMaxX + this.seatMinX) / 2;
@@ -101,7 +107,6 @@ export default {
     getSeatStyle(seat) {
       return {
         position: 'absolute',
-        // 平移到容器中心
         left: `${seat.x - this.centerX + this.containerWidth / 2 }px`, 
         top: `${seat.y - this.centerY + this.containerHeight / 2}px`, 
         width: '75px',
@@ -121,18 +126,16 @@ export default {
         position: 'relative',
         width: `95vw`,
         height: `80%`,
-        margin: '0 auto',  // 居中显示
+        margin: '0 auto',
       };
     },
-	
-	seatLayoutStyle(){
-		console.log(this.containerWidth)
-		return {
-			position: 'relative',
-			width: `${this.containerWidth}px`,
-			height: `${ this.containerHeight}px`
-		};
-	}
+    seatLayoutStyle() {
+      return {
+        position: 'relative',
+        width: `${this.containerWidth}px`,
+        height: `${this.containerHeight}px`
+      };
+    }
   }
 };
 </script>
