@@ -21,7 +21,8 @@
 </template>
 
 <script>
-import axios from 'axios';
+import http from "@/utils/http.ts"
+import tools from "@/utils/tools.js"
 
 export default {
   data() {
@@ -40,11 +41,11 @@ export default {
   },
   methods: {
     fetchSeats() {
-      axios.get('http://10.34.65.86:8888/club/seat/view?club_id=36', {
-        headers: { 'accept': '*/*' }
+      http.get('/club/seat/view', {
+      	club_id: 36
       })
-      .then(response => {
-        this.seats = response.data.data;
+      .then(res => {
+        this.seats = res.data;
         this.calculateSeatBoundaries();
         this.setContainerSize();
       })
