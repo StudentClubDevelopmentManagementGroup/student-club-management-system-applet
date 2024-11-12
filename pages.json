@@ -50,6 +50,13 @@
 			"style": {
 				"navigationBarTitleText": "座位表"
 			}
+		},
+		{
+			"path" : "pages/duty/duty",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
 	],
 

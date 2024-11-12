@@ -24,11 +24,11 @@
 				<image src="../../static/svgs/functionArea_info.svg"></image>
 			</view>
 			<view class="content-body">
-				<view class="item" @click="gotoMainPage()">
+				<view class="item" @click="gotoSeatPage()">
 					<image style="width: 40px; height: 40px; padding: 12px;	background-color: #9f92f2;" src="/static/svgs/functionArea_座位.svg"></image>
 					<text style="color: #9f92f2;">座位表</text>	
 				</view>
-				<view class="item" @click="developing()">
+				<view class="item" @click="gotoDutyPage()">
 					<image style="	background-color: #72cde6;" src="/static/svgs/functionArea_值日.svg"></image>
 					<text style="color: #72cde6;">值日表</text>
 				</view>
@@ -56,9 +56,14 @@
 				})
 				return
 			},
-			gotoMainPage(){
+			gotoSeatPage(){
 				uni.navigateTo({
 					url:"/pages/seat/seat"
+				})
+			},
+			gotoDutyPage(){
+				uni.navigateTo({
+					url:"/pages/duty/duty"
 				})
 			}
 		}
