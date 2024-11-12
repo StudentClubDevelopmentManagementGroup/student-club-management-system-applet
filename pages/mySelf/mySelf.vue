@@ -13,7 +13,7 @@
 				<image src="../../static/svgs/mySelf_补卡进程.svg"></image>
 				<text>补卡进程</text>
 			</view>
-			<view class="item" @click="developing()">
+			<view class="item" @click="toViewRecord()">
 				<image src="../../static/svgs/mySelf_签到详情.svg"></image>
 				<text>签到详情</text>
 			</view>
@@ -55,6 +55,12 @@
 		},
 
 		methods: {
+			toViewRecord() {
+				// 跳转到指定的路由页面
+				uni.navigateTo({
+					url: '/pages/attendance/viewRecord/viewRecord'
+				});
+			},
 			developing() {
 				uni.showToast({
 					title: "该功能正在开发",

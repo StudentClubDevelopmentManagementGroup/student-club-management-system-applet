@@ -7,11 +7,11 @@
 				<image src="../../static/svgs/functionArea_app.svg"></image>
 			</view>
 			<view class="content-body">
-				<view class="item" @click="developing()">
+				<view class="item" @click="toCheckIn()">
 					<image style="background-color: #759fe0;" src="/static/svgs/functionArea_打卡.svg"></image>
 					<text style="color: #759fe0;">打卡</text>
 				</view>
-				<view class="item" @click="developing()">
+				<view class="item" @click="toMakeUpCheckIn()">
 					<image style="width: 36px; height: 36px; padding: 14px; background-color: #8898f2;" src="/static/svgs/functionArea_补卡.svg"></image>
 					<text style="color: #8898f2;">补卡</text>
 				</view>
@@ -45,6 +45,18 @@
 			}
 		},
 		methods: {
+			toCheckIn() {
+				// 跳转到指定的路由页面
+				uni.navigateTo({
+					url: '/pages/attendance/checkIn/checkIn'
+				});
+			},
+			toMakeUpCheckIn() {
+				// 跳转到指定的路由页面
+				uni.navigateTo({
+					url: '/pages/attendance/makeUpCheckIn/makeUpCheckIn'
+				});
+			},
 			
 			developing(){
 				uni.showToast({

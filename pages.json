@@ -1,5 +1,6 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+
 		{
 			"path": "pages/login/login",
 			"style": {
@@ -29,6 +30,28 @@
 				"navigationBarTitleText" : "个人中心",
 				"navigationBarBackgroundColor": "#0272af",
 				"navigationBarTextStyle": "white"
+			}
+		},
+
+		{
+			"path" : "pages/attendance/checkIn/checkIn",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/attendance/makeUpCheckIn/makeUpCheckIn",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/attendance/viewRecord/viewRecord",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
 			}
 		}
 	],
@@ -67,5 +90,15 @@
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#ffffff"
 	},
-	"uniIdRouter": {}
+	"uniIdRouter": {},
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "", //模式名称
+				"path": "", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
+			}
+		]
+	}
 }
