@@ -1,53 +1,56 @@
+/* 页面主体背景 */
 #main-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-	width: 100%;
-    background-size: cover; /* 使背景图像铺满容器 */
-    background-repeat: no-repeat;
-    background-position: center;
-    min-height: 100vh; /* 设置最小高度为视口高度，确保背景延伸至整个屏幕 */
-	padding-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background-image: url('/static/images/背景.jpg');
+  background-size: cover; /* 使背景图像铺满容器 */
+  background-repeat: no-repeat;
+  background-position: center;
+  min-height: 100vh; /* 设置最小高度为视口高度，确保背景延伸至整个屏幕 */
+  padding-top: 60px;
 }
 
-
+/* 搜索框容器样式 */
 .search-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-    position: fixed;
-    top: 40px; /* 距离顶部50px，避免遮挡导航栏 */
-    left: 0;
-    background-color: white;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 10px;
+  position: fixed;
+  top: 40px; /* 距离顶部50px，避免遮挡导航栏 */
+  left: 0;
+  background-color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-
-.picker {
-    display: flex;
-    background-color: #f5f5f5;
-    padding: 5px;
-    border-radius: 5px;
-	width: 95px;
-	height: 30px;
-	align-items: center;
-	justify-content: center;
+/* 输入框样式 */
+.input {
+  width: 95px; /* 可根据需要调整宽度 */
+  background-color: #ffffff;
+  height: 45px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
+/* 查询按钮样式 */
 .search-btn {
-    background-color: #005ba1;
-    color: white;
-    height: auto;
-    width: auto;
-    border-radius: 5px;
-    font-size: 16px;
-    white-space: nowrap; /* 禁止换行 */
+  background-color: #005ba1;
+  color: white;
+  height: auto;
+  width: auto;
+  border-radius: 5px;
+  font-size: 16px;
+  white-space: nowrap; /* 禁止换行 */
 }
 
-
+/* 值日卡片样式 */
 .duty-card {
   background-color: #ffffff;
   border-radius: 5px;
@@ -69,13 +72,20 @@
   font-size: 14px;
 }
 
-.input {
-    width: 95px; /* 可根据需要调整宽度 */
-	background-color: #ffffff;
-	height: 45px;
-    padding: 8px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
+/* 图片展示区域 */
+.images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 每行显示两张图片 */
+  gap: 10px; /* 每张图片之间的间隔 */
+  margin-top: 10px;
+  width: 100%; /* 确保容器占满可用宽度 */
+  box-sizing: border-box;
+}
+
+.images img {
+  width: 100%; /* 图片宽度占满容器 */
+  height: 100px; /* 固定高度 */
+  object-fit: contain; /* 保持图片比例，避免拉伸 */
+  border-radius: 5px;
+  box-sizing: border-box; /* 确保计算宽度时考虑间隔 */
 }
