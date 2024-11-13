@@ -45,13 +45,41 @@
 	align-self: center;
 }
 
-.body .account-login {}
+.account-login {
+	height: 180px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	transition: 0.3s all;
+}
 
-.body .account-login .input-account {
+.account-login.disable {
+	transform: translateX(-200%);
+	transition: 0.3s all;
+}
+
+.account-login .button {
+	margin-top: 10px;
+	color: white;
+	font-weight: bolder;
+	width: 85%;
+	height: 35px;
+	line-height: 35px;
+	background-color: #0272af;
+	transition: 0.3s all;
+}
+.account-login .button.disable {
+	background-color: gray;
+	pointer-events: none
+}
+
+.input-account {
 	display: flex;
 	align-items: center;
 	height: 32px;
-	padding: 4px;
+	width: 100%;
+	margin: 4px;
 	margin-bottom: 8px;
 	border-bottom: 2px solid black;
 }
@@ -61,51 +89,134 @@
 	height: 24px;
 	width: 24px;
 }
+.input-account input {
+	//width:100%
+}
 
-.body .input-password {
+.input-password {
 	display: flex;
 	align-items: center;
+	width: 100%;
 	height: 32px;
-	padding: 4px;
+	margin: 4px;
 	margin-bottom: 8px;
 	border-bottom: 2px solid black;
 }
 
-.body .input-password image {
+.input-password image {
 	margin-right: 8px;
 	height: 24px;
 	width: 24px;
 }
+.input-password input {
+	//width:100%
+}
 
-.body .function-area {
+.function-area {
 	padding: 8px;
 	justify-content: space-between;
 	display: flex;
+	width: 100%;
 }
 
-.body .function-area #t3 {
+.function-area #t3 {
 	font-size: 12px;
 	font-weight: bolder;
 	color: $uni-bg-color-mask;
 }
 
-.body .function-area #t4 {
+.function-area #t4 {
 	font-size: 12px;
 	font-weight: bolder;
 	color: #3c90be;
 }
 
-.account-login button {
+
+.email-login {
+	position: fixed;
+	height: 180px;
+	width: 85%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	transform: translateX(0) translateY(-180px);
+	transition: 0.3s all; 
+}
+
+.email-login.disable {
+	transform: translateX(200%) translateY(-180px);
+	transition: 0.3s all; 
+}
+
+.input-email{
+	display: flex;
+	align-items: center;
+	height: 32px;
+	width: 100%;
+	margin: 4px;
+	margin-bottom: 8px;
+	border-bottom: 2px solid black;
+}
+.input-email input{
+	width: 100%;
+	height: 100%;
+}
+
+.input-email image{
+	margin-right: 8px;
+	height: 24px;
+	width: 24px;
+}
+
+.input-code{
+	display: flex;
+	align-items: center;
+	height: 32px;
+	width: 100%;
+	margin: 4px;
+	margin-bottom: 8px;
+}
+
+.input-code input{
+	width: 100%;
+	height: 100%;
+}
+.input-code image{
+	margin-right: 8px;
+	height: 24px;
+	width: 24px;
+}
+
+.input-code button{
+	height: 100%;
+	width: 35%;
+	background-color: #1a62ff;
+	color: white;
+	font-size: small;
+	transition: 0.3s all;
+}
+.input-code button.disable{
+	pointer-events: none;
+	background-color: gray;
+}
+
+.email-login .button {
 	margin-top: 10px;
-	background-color: #0272af;
 	color: white;
 	font-weight: bolder;
 	width: 85%;
 	height: 35px;
 	line-height: 35px;
+	background-color: #0272af;
+	transition: 0.3s all;
+}
+.email-login .button.disable {
+	background-color: gray;
+	pointer-events: none
 }
 
-.email-login {}
+
 
 .footer {
 	display: flex;

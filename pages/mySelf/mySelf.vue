@@ -4,7 +4,7 @@
 			<image id="avatar" src="../../static/images/avatars/特异人士2.png"></image>
 			<view style="display: flex;flex-direction: column;">
 				<text id="user-name">{{userName}}</text>
-				<text id="user-department">XXXX社团</text>
+				<!-- <text id="user-department">XXXX社团</text> -->
 			</view>
 			<image @click="developing()" id="setting" src="../../static/svgs/mySelf_setting.svg"></image>
 		</view>
@@ -35,11 +35,19 @@
 				<image src="../../static/svgs/mySelf_aboutUs.svg"></image>
 				<text>关于我们</text>
 			</view>
+			<view class="item" @click="exit()">
+				<image src="../../static/svgs/mySelf_exit.svg"></image>
+				<text>退出登录</text>
+			</view>
 		</view>
 	</view>
+	<!--
+	<my-tabbar currentPagePath="/pages/notice/notice"></my-tabbar>
+	-->
 </template>
 
 <script>
+	import http from "@/utils/http.ts"
 	export default {
 		data() {
 			return {
@@ -50,7 +58,6 @@
 		},
 		onLoad() {
 			this.app = getApp()
-			
 			this.userName = this.app.globalData.userData.userInfo.name
 		},
 
@@ -60,6 +67,13 @@
 				uni.navigateTo({
 					url: '/pages/attendance/viewRecord/viewRecord'
 				});
+			},
+			exit() {
+				http.post("/user/logout")
+				uni.reLaunch({
+					url: "/pages/login/login"
+				})
+
 			},
 			developing() {
 				uni.showToast({

@@ -8,11 +8,18 @@
 			}
 		},
 		{
-			"path" : "pages/notice/notice",
+			"path" : "pages/announcement/AnnList",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+		    "path" : "pages/announcement/AnnDetail",
+		    "style" :
+		    {
+		        "navigationBarTitleText" : ""
+		    }
 		},
 		{
 			"path" : "pages/functionArea/functionArea",
@@ -32,24 +39,37 @@
 				"navigationBarTextStyle": "white"
 			}
 		},
+		{
+			"path" : "pages/register/register",
+			"style" :
+			{
+				"navigationBarTitleText" : "注册页面"
+			}
+		},
+		{
+			"path": "pages/seat/seat",
+			"style": {
+				"navigationBarTitleText": "座位表"
+			}
+		},
 
 		{
 			"path" : "pages/attendance/checkIn/checkIn",
-			"style" : 
+			"style" :
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
 		{
 			"path" : "pages/attendance/makeUpCheckIn/makeUpCheckIn",
-			"style" : 
+			"style" :
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
 		{
 			"path" : "pages/attendance/viewRecord/viewRecord",
-			"style" : 
+			"style" :
 			{
 				"navigationBarTitleText" : ""
 			}
@@ -63,7 +83,7 @@
 		"backgroundColor":"#ffffff",
 		"list": [
 			{
-				"pagePath": "pages/notice/notice",
+				"pagePath": "pages/announcement/AnnList",
 				"iconPath": "static/images/tabbar_notice.png",
 				"selectedIconPath": "static/images/tabbar_notice_selected.png",
 				"text": "公告"
@@ -78,7 +98,7 @@
 				"pagePath": "pages/mySelf/mySelf",
 				"iconPath": "static/images/people.png",
 				"selectedIconPath": "static/images/people_selected.png",
-				"text": "我的"
+				"text": "个人中心"
 			}
 			
 		]
