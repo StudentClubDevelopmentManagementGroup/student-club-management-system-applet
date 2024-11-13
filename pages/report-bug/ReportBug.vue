@@ -2,32 +2,64 @@
   <view class="container">
     <view>
       <text class="label">标题</text>
-      <input class="input" type="text" placeholder="请简述 Bug"/>
+      <input class="input" type="text" v-model="title" placeholder="请简述 Bug"/>
     </view>
     
     <view>
       <text class="label">描述</text>
-      <textarea class="textarea" maxlength="2000" placeholder="请详细描述问题"></textarea>
+      <textarea class="textarea" v-model="description" maxlength="2000" placeholder="请详细描述 Bug"></textarea>
     </view>
     
     <view>
-      <text class="label">截图</text>
+      <text class="label">截图（选填）</text>
       <view class="upload-box" @tap="chooseImage">
         <view>点击上传截图</view>
       </view>
     </view>
     
     <view>
-      <text class="label">联系方式</text>
-      <input class="input" type="text" placeholder="请输入联系方式"/>
+      <text class="label">联系方式（选填）</text>
+      <input class="input" type="text" v-model="contact" placeholder="请输入联系方式"/>
     </view>
     
-    <button class=".submit-button">提交</button>
+    <button class="submit-button" @click="submitBug">提交</button>
   </view>
 </template>
 
-<script>
+<script setup>
+  import { ref } from 'vue'
 
+  const title = ref('')
+  const description = ref('')
+  const contact = ref('')
+  const image = ref(null)
+
+  async function chooseImage() {
+    try {
+      const result = await uni.chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera']
+      });
+      if (result.tempFilePaths.length > 0) {
+        image.value = result.tempFilePaths[0]
+      }
+    } catch (error) {
+      console.error('选择图片失败:', error)
+    }
+  };
+
+  function submitBug() {
+    if ( ! title.value) {
+      uni.showToast({ title: '请填写标题', icon: 'none' })
+      return
+    }
+    else if ( ! description.value) {
+      uni.showToast({ title: '请填写描述', icon: 'none' })
+      return
+    }
+
+  };
 </script>
 
 <style>
