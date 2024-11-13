@@ -4,9 +4,18 @@
 			<image id="avatar" src="../../static/images/avatars/特异人士2.png"></image>
 			<view style="display: flex;flex-direction: column;">
 				<text id="user-name">{{userName}}</text>
-				<!-- <text id="user-department">XXXX社团</text> -->
+				<text id="user-department">{{app.globalData.appData.currentClubIndex === null?'暂无社团':clubName}}</text> 
 			</view>
-			<image @click="developing()" id="setting" src="../../static/svgs/mySelf_setting.svg"></image>
+			<picker id="setting"
+				mode="selector"
+				:range="app.globalData.userData.clubInfo"
+				range-key="clubName"
+				:value="app.globalData.appData.currentClubIndex"
+				@change="changeClub"
+				:disabled="disablePicker"
+			>
+				<image src="../../static/svgs/mySelf_setting.svg"></image>
+			</picker>
 		</view>
 		<view id="functionArea1">
 			<view class="item" @click="developing()">
@@ -54,16 +63,36 @@
 				app: null,
 				userName: "",
 				userDepartment: "",
+				clubName:"",
+				disablePicker:null
 			}
 		},
 		onLoad() {
 			this.app = getApp()
 			this.userName = this.app.globalData.userData.userInfo.name
+			if(this.app.globalData.appData.currentClubIndex !== null){
+				this.disablePicker = false
+				this.clubName = this.app.globalData.userData.clubInfo[this.app.globalData.appData.currentClubIndex].clubName
+			}
+			else{
+				this.disablePicker = true
+				this.clubName = "暂无社团"
+			}
 		},
 
 		methods: {
+			changeClub(e){
+				let index = e.detail.value
+				this.app.globalData.appData.currentClubIndex = index
+				this.clubName = this.app.globalData.userData.clubInfo[index].clubName
+				uni.showToast({
+					title:"切换社团成功",
+					icon:'success'
+				})
+			},
 			exit() {
 				http.post("/user/logout")
+				this.app.globalData.appData.currentClubIndex = null
 				uni.reLaunch({
 					url: "/pages/login/login"
 				})

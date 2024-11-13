@@ -136,6 +136,8 @@
 				let clubInfo = []
 				http.post('/club/member/select_Myself_all_club_info',{}).then((res)=>{
 					if(res.status_code == 200){
+						//此处将当前社团下标设置为0，意味着默认选中第1个社团
+						this.app.globalData.appData['currentClubIndex'] = 0
 						res.data.forEach((club=>{
 							clubInfo.push(tools.changeNameFromLowerSnakeToCamel(club))
 						}))

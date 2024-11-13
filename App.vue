@@ -3,6 +3,9 @@
 		globalData: {
 			userData: {
 				token: ''
+			},
+			appData:{
+				currentClubIndex:null,
 			}
 		},
 
