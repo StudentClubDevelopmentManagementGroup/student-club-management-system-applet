@@ -99,6 +99,7 @@
 						return
 					}
 					this.gotoMainPage(res)
+					this.getUserClubInfo()
 				})
 			},
 			loginByEmail(){
@@ -127,8 +128,20 @@
 						return
 					}
 					this.gotoMainPage(res)
+					this.getUserClubInfo()
 				})
 				
+			},
+			getUserClubInfo(){
+				let clubInfo = []
+				http.post('/club/member/select_Myself_all_club_info',{}).then((res)=>{
+					if(res.status_code == 200){
+						res.data.forEach((club=>{
+							clubInfo.push(tools.changeNameFromLowerSnakeToCamel(club))
+						}))
+					}
+					this.app.globalData.userData.clubInfo = clubInfo
+				})
 			},
 			getVeriCode(){
 				if(!this.account){
