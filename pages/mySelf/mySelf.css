@@ -37,7 +37,11 @@
 	width: 24px;
 	position: absolute;
 	right: 0;
-	margin: 16px;
+	padding: 12px;
+}
+#setting image{
+	height: 24px;
+	width: 24px;
 }
 
 #functionArea1{
