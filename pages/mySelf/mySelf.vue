@@ -9,7 +9,7 @@
 			<image @click="developing()" id="setting" src="../../static/svgs/mySelf_setting.svg"></image>
 		</view>
 		<view id="functionArea1">
-			<view class="item" @click="developing()">
+			<view class="item" @click="toTest()">
 				<image src="../../static/svgs/mySelf_补卡进程.svg"></image>
 				<text>补卡进程</text>
 			</view>
@@ -66,6 +66,12 @@
 				// 跳转到指定的路由页面
 				uni.navigateTo({
 					url: '/pages/attendance/viewRecord/viewRecord'
+				});
+			},
+			toTest() {
+				// 跳转到指定的路由页面
+				uni.navigateTo({
+					url: '/pages/attendance/test/test'
 				});
 			},
 			exit() {

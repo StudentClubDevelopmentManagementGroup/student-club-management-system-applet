@@ -1,40 +1,70 @@
 <template>
-  <view>
-    <!-- 显示当前选中的社团名称 -->
-    <text>{{ currentClub.clubName }}</text>
-    
-    <!-- 显示当前社团的 ID -->
-    <text>社团 ID: {{ currentClub.clubId }}</text>
-  </view>
+	<view>
+		<h2>考勤时长信息</h2>
+		<view v-if="attendanceData.userId">
+			<p>用户ID: {{ attendanceData.userId }}</p>
+			<p>用户名称: {{ attendanceData.userName }}</p>
+			<p>俱乐部名称: {{ attendanceData.clubName }}</p>
+			<p>考勤时长: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
+		</view>
+		<view v-else>
+			<p>加载数据中...</p>
+		</view>
+	</view>
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      currentClub: {}  // 存储当前社团信息
-    };
-  },
-  onLoad() {
-    // 获取全局数据
-    const app = getApp();
-    const clubInfo = app.globalData.userData?.clubInfo || [];  // 获取社团信息
+	import http from "@/utils/http.ts"; // 导入封装好的 http 请求工具
 
-    // 获取当前选中的社团索引
-    const currentClubIndex = app.globalData.appData.currentClubIndex || 0;
+	export default {
+		data() {
+			return {
+				attendanceData: {}, // 用对象来存储单个用户的数据
+			};
+		},
 
-    // 根据当前选择的社团下标获取当前社团信息
-    const selectedClub = clubInfo[currentClubIndex] || {};
+		mounted() {
+			// 发起请求并获取数据
+			this.fetchAttendanceData();
+		},
 
-    // 将当前社团信息存储到 data 中
-    this.currentClub = selectedClub;
-  }
-};
+		methods: {
+
+			async fetchAttendanceData() {
+				try {
+					const response = await http.post("/attendance/durationTime", {
+						clubId: 36,
+						userName: "",
+						userId: "2100301816",
+						startTime: "2024-09-09 00:00:00",
+						endTime: "2024-09-15 23:59:59",
+					});
+
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data.length > 0) {
+						this.attendanceData = response.data[0]; // 只取第一个用户数据
+						console.log("用户一周打卡时长", this.attendanceData);
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+
+			// 将秒数转换为时:分:秒格式
+			formatDuration(seconds) {
+				const hours = Math.floor(seconds / 3600); // 计算小时
+				const minutes = Math.floor((seconds % 3600) / 60); // 计算分钟
+				const remainingSeconds = seconds % 60; // 计算剩余的秒数
+
+				// 格式化为时:分:秒
+				return `${hours}小时 ${minutes}分钟 ${remainingSeconds}秒`;
+			}
+		},
+	};
 </script>
 
 <style scoped>
-text {
-  font-size: 16px;
-  color: #333;
-}
+	/* 样式可以根据需求调整 */
 </style>

@@ -1,94 +1,201 @@
 <template>
-  <view class="container">
-    <!-- 第一部分：时间计时 -->
-    <view class="section timer-section">
-      <p>{{ formattedTime }}</p>
-    </view>
+	<view class="container">
+		<!-- 第一部分：时间计时 -->
+		<view class="section timer-section">
+			<p>{{ formattedTime }}</p>
+			<!-- 显示当前选中的社团名称 -->
+			<p v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
+		</view>
 
-    <!-- 第二部分：打卡记录 -->
-    <view class="section log-section">
-      <p>签到时间：{{ signInTime || '未签到' }}</p>
-      <p>签退时间：{{ signOutTime || '未签退' }}</p>
-      <p>本周累计打卡时长：{{ totalTime }} 小时</p>
-    </view>
+		<!-- 第二部分：打卡记录 -->
+		<view class="section log-section">
+			<p>{{ signInTime ? signInTime +  ' 开始打卡' : '尚未开始打卡' }}</p>
 
-    <!-- 第三部分：单一按钮 -->
-    <view class="button-section">
-      <button @click="toggleClocking" class="clocking-button">
-        {{ isClockingIn ? '结束打卡' : '开始打卡' }}
-      </button>
-    </view>
-  </view>
+			<p>{{ signOutTime ? signOutTime +' 结束打卡': '暂无离开时间' }} </p>
+			<view v-if="attendanceData.userId">
+				<p>本周总计打卡时间: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
+			</view>
+			<view v-else>
+				<p>加载数据中...</p>
+			</view>
+		</view>
+
+		<!-- 第三部分：单一按钮 -->
+		<view class="button-section">
+			<button @click="toggleClocking" class="clocking-button">
+				{{ isClockingIn ? '结束打卡' : '开始打卡' }}
+			</button>
+		</view>
+	</view>
 </template>
+
 <script>
-export default {
-  data() {
-    return {
-      signInTime: null, // 签到时间
-      signOutTime: null, // 签退时间
-      totalTime: 0, // 本周累计打卡时长（单位：小时）
-      isClockingIn: false, // 是否正在打卡
-      timerInterval: null, // 用来存储计时器的 ID
-      elapsedTime: 0, // 计时的秒数
-    };
-  },
-  computed: {
-    // 格式化计时显示（时:分:秒）
-    formattedTime() {
-      const hours = String(Math.floor(this.elapsedTime / 3600)).padStart(2, '0');
-      const minutes = String(Math.floor((this.elapsedTime % 3600) / 60)).padStart(2, '0');
-      const seconds = String(this.elapsedTime % 60).padStart(2, '0');
-      return `${hours} : ${minutes} : ${seconds}`;
-    },
-  },
-  methods: {
-    // 切换打卡状态
-    toggleClocking() {
-      if (this.isClockingIn) {
-        this.endClockingIn(); // 如果正在打卡，结束打卡
-      } else {
-        this.startClockingIn(); // 如果未打卡，开始打卡
-      }
-    },
+	import http from "@/utils/http.ts"; // 导入封装好的 http 请求工具
 
-    // 开始打卡
-    startClockingIn() {
-      this.signInTime = this.getCurrentTime();
-      this.isClockingIn = true;
-      this.elapsedTime = 0; // 重置计时
-      this.timerInterval = setInterval(() => {
-        this.elapsedTime++; // 每秒增加1秒
-      }, 1000);
-    },
+	export default {
+		data() {
+			return {
+				attendanceData: {}, // 用对象来存储单个用户的数据
+				currentClub: {}, // 存储当前社团信息
+				weekStart: "", // 本周开始时间
+				weekEnd: "", // 本周结束时间
+				userInfo: {}, // 存储用户信息
+				signInTime: null, // 签到时间
+				signOutTime: null, // 签退时间
+				isClockingIn: false, // 是否正在打卡
+				timerInterval: null, // 用来存储计时器的 ID
+				elapsedTime: 0, // 计时的秒数
+			};
+		},
 
-    // 结束打卡
-    endClockingIn() {
-      this.signOutTime = this.getCurrentTime();
-      this.isClockingIn = false;
-      clearInterval(this.timerInterval); // 停止计时
-      this.calculateTotalTime();
-      this.elapsedTime = 0; // 重置计时
-    },
+		onLoad() {
+			// 获取全局数据
+			const app = getApp();
+			const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
+			const userInfo = app.globalData.userData?.userInfo || {};
+			this.userInfo = userInfo; // 将用户信息存储到 data 中
 
-    // 获取当前时间
-    getCurrentTime() {
-      return new Date().toLocaleTimeString();
-    },
+			// 获取当前选中的社团索引，确保全局数据的正确访问
+			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
 
-    // 计算本周累计打卡时长（这里的实现是个示例，实际需要存储数据并计算）
-    calculateTotalTime() {
-      // 假设每次打卡时长为1小时，实际情况可以通过时间差来计算
-      this.totalTime += 1; // 每次打卡增加1小时
-    },
-  },
-  beforeDestroy() {
-    // 清理计时器，避免内存泄漏
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  },
-};
+			// 根据当前选择的社团下标获取当前社团信息
+			const selectedClub = clubInfo[currentClubIndex] || {};
+
+			// 将当前社团信息存储到 data 中
+			this.currentClub = selectedClub;
+
+			// 发起请求并获取数据
+			this.fetchAttendanceData();
+			// 获取本周开始和结束时间
+			this.getWeekStartEnd();
+		},
+
+		computed: {
+			formattedTime() {
+				const hours = String(Math.floor(this.elapsedTime / 3600)).padStart(2, '0');
+				const minutes = String(Math.floor((this.elapsedTime % 3600) / 60)).padStart(2, '0');
+				const seconds = String(this.elapsedTime % 60).padStart(2, '0');
+				return `${hours} : ${minutes} : ${seconds}`;
+			},
+		},
+
+		methods: {
+			getWeekStartEnd() {
+				const now = new Date();
+
+				console.log("时间", now);
+				const dayOfWeek = now.getDay(); // 获取当前星期几 (0-6，0代表星期日，1代表星期一...)
+
+				// 计算本周一的日期
+				const monday = new Date(now);
+				monday.setDate(now.getDate() - dayOfWeek + 1); // 将当前日期设置为本周一
+
+				// 计算本周日的日期
+				const sunday = new Date(now);
+				sunday.setDate(now.getDate() - dayOfWeek + 7); // 将当前日期设置为本周日
+
+				// 设置时间格式为 "yyyy-mm-dd 00:00:00" 和 "yyyy-mm-dd 23:59:59"
+				this.weekStart = this.formatDate(monday, "00:00:00");
+				this.weekEnd = this.formatDate(sunday, "23:59:59");
+				console.log("本周一时间", this.weekStart);
+				console.log("本周日时间", this.weekEnd);
+			},
+
+			formatDate(date, time) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				return `${year}-${month}-${day} ${time}`;
+			},
+
+			// 发起请求获取考勤数据
+			async fetchAttendanceData() {
+				try {
+					const response = await http.post("/attendance/durationTime", {
+						clubId: 36, // 直接使用 this.currentClub.clubId
+						userName: "", // 用户名可为空
+						userId: "2100301816", // 直接使用 this.userInfo.userId
+						startTime: "2024-09-09 00:00:00", // 可以根据需求调整时间范围
+						endTime: "2024-09-15 23:59:59",
+					});
+					console.log("当前登录用户id", this.userInfo.userId);
+					console.log("当前用户选择社团id", this.currentClub.clubId);
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						this.attendanceData = response.data[0];
+						console.log("用户一周打卡时长", this.attendanceData);
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+
+			// 将秒数转换为时:分:秒格式
+			formatDuration(seconds) {
+				const hours = Math.floor(seconds / 3600);
+				const minutes = Math.floor((seconds % 3600) / 60);
+				const remainingSeconds = seconds % 60;
+				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+			},
+
+			// 切换打卡状态
+			toggleClocking() {
+				if (this.isClockingIn) {
+					this.endClockingIn();
+				} else {
+					this.startClockingIn();
+				}
+			},
+
+			// 开始打卡
+			startClockingIn() {
+				this.signInTime = this.getCurrentTime();
+				console.log("打卡时间", this.signInTime);
+				this.isClockingIn = true;
+				this.elapsedTime = 0; // 重置计时
+				this.timerInterval = setInterval(() => {
+					this.elapsedTime++; // 每秒增加1秒
+				}, 1000);
+			},
+
+			// 结束打卡
+			endClockingIn() {
+				this.signOutTime = this.getCurrentTime();
+				console.log("签退时间", this.signOutTime);
+				this.isClockingIn = false;
+				clearInterval(this.timerInterval); // 停止计时
+				this.elapsedTime = 0; // 重置计时
+			},
+
+
+			// 获取当前时间并格式化为 yyyy-mm-dd hh:mm:ss
+			getCurrentTime() {
+				const now = new Date();
+				const year = now.getFullYear();
+				const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
+				const day = String(now.getDate()).padStart(2, '0');
+				const hours = String(now.getHours()).padStart(2, '0');
+				const minutes = String(now.getMinutes()).padStart(2, '0');
+				const seconds = String(now.getSeconds()).padStart(2, '0');
+
+				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+			}
+
+
+		},
+
+		beforeDestroy() {
+
+			// 清理计时器，避免内存泄漏
+			if (this.timerInterval) {
+				clearInterval(this.timerInterval);
+			}
+		},
+	};
 </script>
+
 <style scoped>
-@import url(./checkIn.css);
+	@import url(./checkIn.css);
 </style>
