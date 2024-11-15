@@ -9,7 +9,7 @@
   background-repeat: no-repeat;
   background-position: center;
   min-height: 100vh; /* 设置最小高度为视口高度，确保背景延伸至整个屏幕 */
-  padding-top: 60px;
+  padding-top: 60px; /* 确保背景不遮挡导航栏 */
 }
 
 /* 搜索框容器样式 */
@@ -20,7 +20,7 @@
   margin: 0;
   padding: 10px;
   position: fixed;
-  top: 40px; /* 距离顶部50px，避免遮挡导航栏 */
+  top: 40px; /* 距离顶部40px，避免遮挡导航栏 */
   left: 0;
   background-color: white;
   z-index: 1000;
@@ -49,6 +49,22 @@
   font-size: 16px;
   white-space: nowrap; /* 禁止换行 */
 }
+
+/* 查看自己签到按钮 */
+.self-duty-btn {
+  position: fixed;
+  top: 0; /* 距离顶部0px，紧贴导航栏 */
+  left: 68%; /* 定位到页面的水平中间 */
+  background-color: #28a745;
+  color: white;
+  padding: 3px 10px;
+  font-size: 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer; /* 鼠标悬停时显示为手型 */
+  border-radius: 0; /* 删除圆角 */
+}
+
 
 /* 值日卡片样式 */
 .duty-card {
