@@ -1,42 +1,58 @@
 <template>
   <view>
-    <view v-if="clubInfo.length > 0">
-      <view v-for="(club, index) in clubInfo" :key="index" class="club-item">
-        <p>社团名称：{{ club.clubName }}</p>
-        <p>社团 ID：{{ club.clubId }}</p>
-        <p>部门名称：{{ club.departmentName }}</p>
-        <p>角色：{{ club.role }}</p>
-        <hr />
-      </view>
-    </view>
+    <!-- 显示学号 -->
+    <p>学号: {{ userInfo.userId }}</p>
+    
+    <!-- 显示姓名 -->
+    <p>姓名: {{ userInfo.name }}</p>
+    
+    <!-- 显示当前选中的社团名称 -->
+    <p v-if="currentClub.clubName">当前选中的社团：{{ currentClub.clubName }}</p>
+    
+    <!-- 显示当前社团的 ID -->
+    <p v-if="currentClub.clubId">社团 ID: {{ currentClub.clubId }}</p>
+    
     <view v-else>
-      <p>你尚未加入任何社团。</p>
+      <text>暂无社团信息</text>
     </view>
   </view>
 </template>
-<script>
-	export default {
-		data() {
-			return {
-				clubInfo: [] // 存储社团信息
-			}
-		},
-		created() {
-			// 获取全局数据
-			const app = getApp();
-			this.clubInfo = app.globalData.userData?.clubInfo || [];
-		}
-	}
-</script>
-<style scoped>
-.club-item {
-  padding: 10px;
-  border: 1px solid #ddd;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
 
-p {
+<script>
+export default {
+  data() {
+    return {
+      currentClub: {},  // 存储当前社团信息
+      userInfo: {}       // 存储用户信息
+    };
+  },
+  onLoad() {
+    // 获取全局数据
+    const app = getApp();
+    const clubInfo = app.globalData.userData?.clubInfo || [];  // 获取社团信息
+    console.log("社团信息:", clubInfo);  // 打印社团信息
+
+    // 获取用户信息
+    const userInfo = app.globalData.userData?.userInfo || {};
+    console.log("用户信息:", userInfo);  // 打印用户信息
+    this.userInfo = userInfo;  // 将用户信息存储到 data 中
+
+    // 获取当前选中的社团索引，确保全局数据的正确访问
+    const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
+
+    // 根据当前选择的社团下标获取当前社团信息
+    const selectedClub = clubInfo[currentClubIndex] || {};
+
+    // 将当前社团信息存储到 data 中
+    this.currentClub = selectedClub;
+  }
+};
+</script>
+
+<style scoped>
+text {
+  font-size: 16px;
+  color: #333;
   margin: 5px 0;
 }
 </style>
