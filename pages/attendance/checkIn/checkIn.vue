@@ -9,6 +9,8 @@
 
 		<!-- 第二部分：打卡记录 -->
 		<view class="section log-section">
+			<!-- 判断签到状态 -->
+			<p>{{ checkInStatus }}</p>
 			<p>{{ signInTime ? signInTime +  ' 开始打卡' : '尚未开始打卡' }}</p>
 
 			<p>{{ signOutTime ? signOutTime +' 结束打卡': '暂无离开时间' }} </p>
@@ -35,16 +37,19 @@
 	export default {
 		data() {
 			return {
-				attendanceData: {}, // 用对象来存储单个用户的数据
+				
 				currentClub: {}, // 存储当前社团信息
+				userInfo: {}, // 存储用户信息
+				attendanceData: {}, // 用对象来存储单个用户的数据
 				weekStart: "", // 本周开始时间
 				weekEnd: "", // 本周结束时间
-				userInfo: {}, // 存储用户信息
 				signInTime: null, // 签到时间
 				signOutTime: null, // 签退时间
 				isClockingIn: false, // 是否正在打卡
 				timerInterval: null, // 用来存储计时器的 ID
 				elapsedTime: 0, // 计时的秒数
+				
+				checkInStatus: "", // 用于存储签到状态
 			};
 		},
 
@@ -68,6 +73,8 @@
 			this.fetchAttendanceData();
 			// 获取本周开始和结束时间
 			this.getWeekStartEnd();
+			// 获取签到记录
+			this.fetchLatestCheckInRecord();
 		},
 
 		computed: {
@@ -80,6 +87,8 @@
 		},
 
 		methods: {
+			
+			
 			getWeekStartEnd() {
 				const now = new Date();
 
@@ -107,6 +116,36 @@
 				const day = String(date.getDate()).padStart(2, '0');
 				return `${year}-${month}-${day} ${time}`;
 			},
+			//获取用户当天最新打卡记录
+			async fetchLatestCheckInRecord() {
+				try {
+					const response = await http.get("/attendance/getLatestCheckInRecord", {
+
+						userId: this.userInfo.userId,
+						clubId: this.currentClub.clubId,
+					});
+
+					console.log("当前用户登录id", this.userInfo.userId);
+					console.log("当前用户选择社团id", this.currentClub.clubId);
+
+					// 如果请求成功并且返回数据
+					if (response.status_code === 200) {
+						// 如果已经签到，展示签到时间
+						const checkInTime = response.data.checkInTime; // 获取签到时间
+						const signInTime = new Date(checkInTime);
+						console.log("签到时间",signInTime);
+						this.checkInStatus = `已签到，时间: ${this.requestFormatDate(signInTime)}`;
+					} else {
+						this.checkInStatus = "尚未开始打卡"; // 如果没有签到记录
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+					this.checkInStatus = "获取签到记录失败";
+				}
+				console.log("签到状态", this.checkInStatus);
+			},
+			
+
 
 			// 发起请求获取考勤数据
 			async fetchAttendanceData() {
@@ -179,9 +218,18 @@
 				const hours = String(now.getHours()).padStart(2, '0');
 				const minutes = String(now.getMinutes()).padStart(2, '0');
 				const seconds = String(now.getSeconds()).padStart(2, '0');
-
 				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-			}
+			},
+			
+			requestFormatDate(date) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
+				const day = String(date.getDate()).padStart(2, '0');
+				const hours = String(date.getHours()).padStart(2, '0');
+				const minutes = String(date.getMinutes()).padStart(2, '0');
+				const seconds = String(date.getSeconds()).padStart(2, '0');
+				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+			},
 
 
 		},
