@@ -9,11 +9,13 @@
 
 		<!-- 第二部分：打卡记录 -->
 		<view class="section log-section">
-			<!-- 判断签到状态 -->
+			<!-- 获取当天最新签到状态 -->
 			<p>{{ checkInStatus }}</p>
+			<p>{{ signOutTimeTest }}</p>
+			
 			<p>{{ signInTime ? signInTime +  ' 开始打卡' : '尚未开始打卡' }}</p>
-
 			<p>{{ signOutTime ? signOutTime +' 结束打卡': '暂无离开时间' }} </p>
+			
 			<view v-if="attendanceData.userId">
 				<p>本周总计打卡时间: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
 			</view>
@@ -50,6 +52,7 @@
 				elapsedTime: 0, // 计时的秒数
 				
 				checkInStatus: "", // 用于存储签到状态
+				signOutTimeTest: "", //签退状态
 			};
 		},
 
@@ -132,9 +135,17 @@
 					if (response.status_code === 200) {
 						// 如果已经签到，展示签到时间
 						const checkInTime = response.data.checkInTime; // 获取签到时间
+						const checkoutTime = new Date(response.data.checkoutTime);
 						const signInTime = new Date(checkInTime);
 						console.log("签到时间",signInTime);
-						this.checkInStatus = `已签到，时间: ${this.requestFormatDate(signInTime)}`;
+						this.checkInStatus = `${this.requestFormatDate(signInTime)}开始打卡`;
+						
+						if (checkoutTime === null) {
+						  this.signOutTimeTest = "暂无离开时间";
+						} else {
+						  this.signOutTimeTest = `${this.requestFormatDate(checkoutTime)}结束打卡`;
+						}
+
 					} else {
 						this.checkInStatus = "尚未开始打卡"; // 如果没有签到记录
 					}

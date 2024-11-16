@@ -1,15 +1,15 @@
 <template>
-	<view>
-		<h2>考勤时长信息</h2>
-		<view v-if="attendanceData.userId">
-			<p>用户ID: {{ attendanceData.userId }}</p>
-			<p>用户名称: {{ attendanceData.userName }}</p>
-			<p>俱乐部名称: {{ attendanceData.clubName }}</p>
-			<p>考勤时长: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
-		</view>
-		<view v-else>
-			<p>加载数据中...</p>
-		</view>
+	<view class="container">
+		<!-- 显示当前选中的社团名称 -->
+		<p v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
+
+		<!-- 显示学号 -->
+		<p>学号: {{ userInfo.userId }}</p>
+		<!-- 显示当前社团的 ID -->
+		<p v-if="currentClub.clubId">社团 ID: {{ currentClub.clubId }}</p>
+
+		<!-- 判断签到状态 -->
+		<p>{{ checkInStatus }}</p>
 	</view>
 </template>
 
@@ -19,48 +19,59 @@
 	export default {
 		data() {
 			return {
-				attendanceData: {}, // 用对象来存储单个用户的数据
+				currentClub: {}, // 存储当前社团信息
+				userInfo: {}, // 存储用户信息
+				checkInStatus: '加载中...', // 用于存储签到状态
 			};
 		},
 
-		mounted() {
-			// 发起请求并获取数据
-			this.fetchAttendanceData();
+		onLoad() {
+			// 获取全局数据
+			const app = getApp();
+			const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
+			const userInfo = app.globalData.userData?.userInfo || {}; // 获取用户信息
+			this.userInfo = userInfo; // 将用户信息存储到 data 中
+
+			// 获取当前选中的社团索引，确保全局数据的正确访问
+			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
+
+			// 根据当前选择的社团下标获取当前社团信息
+			const selectedClub = clubInfo[currentClubIndex] || {};
+
+			// 将当前社团信息存储到 data 中
+			this.currentClub = selectedClub;
+
+			// 获取签到记录
+			this.fetchLatestCheckInRecord();
 		},
 
 		methods: {
-
-			async fetchAttendanceData() {
+			async fetchLatestCheckInRecord() {
 				try {
-					const response = await http.post("/attendance/durationTime", {
-						clubId: 36,
-						userName: "",
-						userId: "2100301816",
-						startTime: "2024-09-09 00:00:00",
-						endTime: "2024-09-15 23:59:59",
+					const response = await http.get("/attendance/getLatestCheckInRecord", {
+
+						userId: this.userInfo.userId,
+						clubId: this.currentClub.clubId,
 					});
 
-					// 检查请求是否成功
-					if (response.status_code === 200 && response.data.length > 0) {
-						this.attendanceData = response.data[0]; // 只取第一个用户数据
-						console.log("用户一周打卡时长", this.attendanceData);
+					console.log("当前用户登录id", this.userInfo.userId);
+					console.log("当前用户选择社团id", this.currentClub.clubId);
+
+					// 如果请求成功并且返回数据
+					if (response.status_code === 200) {
+						// 如果已经签到，展示签到时间
+						const checkInTime = response.data.checkInTime; // 获取签到时间
+						const signInTime = new Date(checkInTime);
+						this.checkInStatus = `已签到，时间: ${signInTime.toLocaleTimeString()}`;
 					} else {
-						console.error("请求失败:", response.status_text);
+						this.checkInStatus = "尚未开始打卡"; // 如果没有签到记录
 					}
 				} catch (error) {
 					console.error("请求错误:", error);
+					this.checkInStatus = "获取签到记录失败";
 				}
+				console.log("签到状态", this.checkInStatus);
 			},
-
-			// 将秒数转换为时:分:秒格式
-			formatDuration(seconds) {
-				const hours = Math.floor(seconds / 3600); // 计算小时
-				const minutes = Math.floor((seconds % 3600) / 60); // 计算分钟
-				const remainingSeconds = seconds % 60; // 计算剩余的秒数
-
-				// 格式化为时:分:秒
-				return `${hours}小时 ${minutes}分钟 ${remainingSeconds}秒`;
-			}
 		},
 	};
 </script>
