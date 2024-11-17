@@ -237,8 +237,7 @@
 						// 假设返回的数据格式中 data 是一个对象
 						this.attendanceData = response.data;
 						// console.log("签退成功:", this.attendanceData);
-						this.checkOutStatus =
-							`${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
+						this.checkOutStatus = `${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -285,6 +284,7 @@
 			// 结束打卡
 			endClockingIn() {
 				this.checkOutRequest();
+				this.fetchAttendanceDuration();
 			    this.isClockingIn = false;
 			    clearInterval(this.timerInterval); // 停止计时
 			    this.elapsedTime = 0; // 重置计时
