@@ -33,14 +33,14 @@
 
 		<!-- 第四部分：签到按钮 -->
 		<view class="button-section">
-			<button class="clocking-button">
-				测试按钮
+			<button @click="checkInRequest()" class="clocking-button">
+				签到按钮
 			</button>
 		</view>
 
 		<!-- 第五部分：签退按钮 -->
 		<view class="button-section">
-			<button class="clocking-button">
+			<button @click="checkOutRequest()" class="clocking-button">
 				签退按钮
 			</button>
 		</view>
@@ -87,7 +87,7 @@
 			this.currentClub = selectedClub;
 
 			// 发起请求并获取数据
-			this.fetchAttendanceData();
+			this.fetchAttendanceDuration();
 			// 获取本周开始和结束时间
 			this.getWeekStartEnd();
 			// 获取签到记录
@@ -175,8 +175,8 @@
 
 
 
-			// 发起请求获取考勤数据
-			async fetchAttendanceData() {
+			// 发起请求获取本周考勤时长
+			async fetchAttendanceDuration() {
 				try {
 
 					const response = await http.post("/attendance/durationTime", {
@@ -185,7 +185,7 @@
 						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
 						startTime: this.weekStart, // 可以根据需求调整时间范围
 						endTime: this.weekEnd,
-						
+
 						// "startTime": "2024-11-11 00:00:00",
 						// "endTime": "2024-11-17 23:59:59"
 					});
@@ -210,16 +210,19 @@
 			// 发起签到请求
 			async checkInRequest() {
 				try {
+					// 发起 HTTP POST 请求
 					const response = await http.post("/attendance/checkIn", {
-						clubId: this.currentClub.clubId, // 直接使用 this.currentClub.clubId
-						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
-						checkInTime: this.getCurrentTime(), //签到时间
-
+						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
+						userId: this.userInfo.userId, // 使用 this.userInfo.userId
+						checkInTime: this.requestFormatDate(new Date()), // 调用 getCurrentTime 获取签到时间
 					});
+					console.log("签到时间",this.requestFormatDate(new Date()) )
 
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
-						this.attendanceData = response.data[0];
+						// 假设返回的数据格式中 data 是一个对象
+						this.attendanceData = response.data;
+						console.log("签到成功:", this.attendanceData);
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -227,7 +230,30 @@
 					console.error("请求错误:", error);
 				}
 			},
-
+			
+			// 发起签退请求
+			async checkOutRequest() {
+				try {
+					// 发起 HTTP POST 请求
+					const response = await http.patch("/attendance/checkout", {
+						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
+						userId: this.userInfo.userId, // 使用 this.userInfo.userId
+						checkoutTime: this.requestFormatDate(new Date()), // 调用 getCurrentTime 获取签到时间
+					});
+					console.log("签退时间",this.requestFormatDate(new Date()))
+			
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						// 假设返回的数据格式中 data 是一个对象
+						this.attendanceData = response.data;
+						console.log("签退成功:", this.attendanceData);
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
 
 			// 将秒数转换为时:分:秒格式
 			formatDuration(seconds) {
@@ -254,7 +280,7 @@
 
 			// 开始打卡
 			startClockingIn() {
-				this.signInTime = this.getCurrentTime();
+				this.signInTime = this.requestFormatDate(new Date());
 				console.log("打卡时间", this.signInTime);
 				this.isClockingIn = true;
 				this.elapsedTime = 0; // 重置计时
@@ -265,7 +291,7 @@
 
 			// 结束打卡
 			endClockingIn() {
-				this.signOutTime = this.getCurrentTime();
+				this.signOutTime = this.requestFormatDate(new Date());
 				console.log("签退时间", this.signOutTime);
 				this.isClockingIn = false;
 				clearInterval(this.timerInterval); // 停止计时
@@ -273,17 +299,9 @@
 			},
 
 
+			
 			// 获取当前时间并格式化为 yyyy-mm-dd hh:mm:ss
-			getCurrentTime() {
-				const now = new Date();
-				const year = now.getFullYear();
-				const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
-				const day = String(now.getDate()).padStart(2, '0');
-				const hours = String(now.getHours()).padStart(2, '0');
-				const minutes = String(now.getMinutes()).padStart(2, '0');
-				const seconds = String(now.getSeconds()).padStart(2, '0');
-				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-			},
+			//requestFormatDate(new Date())
 
 			requestFormatDate(date) {
 				const year = date.getFullYear();
