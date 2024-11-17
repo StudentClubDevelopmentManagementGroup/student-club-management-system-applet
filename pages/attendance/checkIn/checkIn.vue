@@ -12,10 +12,10 @@
 			<!-- 获取当天最新签到状态 -->
 			<p>{{ checkInStatus }}</p>
 			<p>{{ signOutTimeTest }}</p>
-			
-			<p>{{ signInTime ? signInTime +  ' 开始打卡' : '尚未开始打卡' }}</p>
-			<p>{{ signOutTime ? signOutTime +' 结束打卡': '暂无离开时间' }} </p>
-			
+
+			<!-- 			<p>{{ signInTime ? signInTime +  ' 开始打卡' : '尚未开始打卡' }}</p>
+			<p>{{ signOutTime ? signOutTime +' 结束打卡': '暂无离开时间' }} </p> -->
+
 			<view v-if="attendanceData.userId">
 				<p>本周总计打卡时间: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
 			</view>
@@ -30,6 +30,20 @@
 				{{ isClockingIn ? '结束打卡' : '开始打卡' }}
 			</button>
 		</view>
+
+		<!-- 第四部分：签到按钮 -->
+		<view class="button-section">
+			<button class="clocking-button">
+				测试按钮
+			</button>
+		</view>
+
+		<!-- 第五部分：签退按钮 -->
+		<view class="button-section">
+			<button class="clocking-button">
+				签退按钮
+			</button>
+		</view>
 	</view>
 </template>
 
@@ -39,7 +53,7 @@
 	export default {
 		data() {
 			return {
-				
+
 				currentClub: {}, // 存储当前社团信息
 				userInfo: {}, // 存储用户信息
 				attendanceData: {}, // 用对象来存储单个用户的数据
@@ -50,7 +64,7 @@
 				isClockingIn: false, // 是否正在打卡
 				timerInterval: null, // 用来存储计时器的 ID
 				elapsedTime: 0, // 计时的秒数
-				
+
 				checkInStatus: "", // 用于存储签到状态
 				signOutTimeTest: "", //签退状态
 			};
@@ -90,15 +104,21 @@
 		},
 
 		methods: {
-			
-			
+
+			//获取本周一和周日时间
 			getWeekStartEnd() {
 				const now = new Date();
+				// 如果一个变量是只读的或者是常量（用 const 声明），那么试图修改它会导致 TypeError。
 
-				console.log("时间", now);
-				const dayOfWeek = now.getDay(); // 获取当前星期几 (0-6，0代表星期日，1代表星期一...)
-
+				console.log("当前时间", now);
+				let dayOfWeek = now.getDay(); // 获取当前星期几 (0-6，0代表星期日，1代表星期一...)
+				console.log("今天是", dayOfWeek)
 				// 计算本周一的日期
+				// 将星期日视为本周的最后一天
+				if (dayOfWeek === 0) {
+					dayOfWeek = 7; // 把星期日视为第7天
+				}
+
 				const monday = new Date(now);
 				monday.setDate(now.getDate() - dayOfWeek + 1); // 将当前日期设置为本周一
 
@@ -109,8 +129,8 @@
 				// 设置时间格式为 "yyyy-mm-dd 00:00:00" 和 "yyyy-mm-dd 23:59:59"
 				this.weekStart = this.formatDate(monday, "00:00:00");
 				this.weekEnd = this.formatDate(sunday, "23:59:59");
-				console.log("本周一时间", this.weekStart);
-				console.log("本周日时间", this.weekEnd);
+				// console.log("本周一时间", this.weekStart);
+				// console.log("本周日时间", this.weekEnd);
 			},
 
 			formatDate(date, time) {
@@ -128,22 +148,19 @@
 						clubId: this.currentClub.clubId,
 					});
 
-					console.log("当前用户登录id", this.userInfo.userId);
-					console.log("当前用户选择社团id", this.currentClub.clubId);
-
 					// 如果请求成功并且返回数据
 					if (response.status_code === 200) {
 						// 如果已经签到，展示签到时间
 						const checkInTime = response.data.checkInTime; // 获取签到时间
 						const checkoutTime = new Date(response.data.checkoutTime);
 						const signInTime = new Date(checkInTime);
-						console.log("签到时间",signInTime);
+						console.log("最新签到时间", signInTime);
 						this.checkInStatus = `${this.requestFormatDate(signInTime)}开始打卡`;
-						
+
 						if (checkoutTime === null) {
-						  this.signOutTimeTest = "暂无离开时间";
+							this.signOutTimeTest = "暂无离开时间";
 						} else {
-						  this.signOutTimeTest = `${this.requestFormatDate(checkoutTime)}结束打卡`;
+							this.signOutTimeTest = `${this.requestFormatDate(checkoutTime)}结束打卡`;
 						}
 
 					} else {
@@ -153,27 +170,35 @@
 					console.error("请求错误:", error);
 					this.checkInStatus = "获取签到记录失败";
 				}
-				console.log("签到状态", this.checkInStatus);
+				console.log("当天最新签到状态", this.checkInStatus);
 			},
-			
+
 
 
 			// 发起请求获取考勤数据
 			async fetchAttendanceData() {
 				try {
+
 					const response = await http.post("/attendance/durationTime", {
-						clubId: 36, // 直接使用 this.currentClub.clubId
+						clubId: this.currentClub.clubId, // 直接使用 this.currentClub.clubId
 						userName: "", // 用户名可为空
-						userId: "2100301816", // 直接使用 this.userInfo.userId
-						startTime: "2024-09-09 00:00:00", // 可以根据需求调整时间范围
-						endTime: "2024-09-15 23:59:59",
+						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
+						startTime: this.weekStart, // 可以根据需求调整时间范围
+						endTime: this.weekEnd,
+						
+						// "startTime": "2024-11-11 00:00:00",
+						// "endTime": "2024-11-17 23:59:59"
 					});
+
 					console.log("当前登录用户id", this.userInfo.userId);
 					console.log("当前用户选择社团id", this.currentClub.clubId);
+					console.log("本周一时间", this.weekStart);
+					console.log("本周日时间", this.weekEnd);
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
 						this.attendanceData = response.data[0];
-						console.log("用户一周打卡时长", this.attendanceData);
+						console.log("用户一周打卡时长", this.attendanceData.attendanceDurationTime);
+
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -182,12 +207,40 @@
 				}
 			},
 
+			// 发起签到请求
+			async checkInRequest() {
+				try {
+					const response = await http.post("/attendance/checkIn", {
+						clubId: this.currentClub.clubId, // 直接使用 this.currentClub.clubId
+						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
+						checkInTime: this.getCurrentTime(), //签到时间
+
+					});
+
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						this.attendanceData = response.data[0];
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+
+
 			// 将秒数转换为时:分:秒格式
 			formatDuration(seconds) {
 				const hours = Math.floor(seconds / 3600);
 				const minutes = Math.floor((seconds % 3600) / 60);
 				const remainingSeconds = seconds % 60;
+
+				// 打印到控制台
+				console.log('Hours:', hours);
+				console.log('Minutes:', minutes);
+				console.log('Remaining Seconds:', remainingSeconds);
 				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+
 			},
 
 			// 切换打卡状态
@@ -231,7 +284,7 @@
 				const seconds = String(now.getSeconds()).padStart(2, '0');
 				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 			},
-			
+
 			requestFormatDate(date) {
 				const year = date.getFullYear();
 				const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
