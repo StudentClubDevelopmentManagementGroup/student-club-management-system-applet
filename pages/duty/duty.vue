@@ -47,6 +47,8 @@ import tools from "@/utils/tools.js";
 export default {
   data() {
     return {
+	  currentClub: {}, // 当前社团信息
+      userInfo: {}, // 用户信息
       clubs: [],               // 社团数据
       dutyData: [],            // 后端返回的所有值日数据
       selfDutyData: [],        // 用户个人值日的数据
@@ -66,6 +68,19 @@ export default {
       });
     }
   },
+  onLoad() {
+    const app = getApp();
+    const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
+    const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0; // 当前社团索引
+  
+    // 设置当前社团
+    this.currentClub = clubInfo[currentClubIndex] || {};
+  
+    // 获取座位信息
+    if (this.currentClub.clubId) {
+      this.fetchSeats();
+    }
+  },
   methods: {
     // 查询所有值日数据
     fetchDutyData() {
@@ -74,7 +89,7 @@ export default {
       this.selfDutyData.splice(0); // 清空个人值日数据，防止残留数据
 
       const params = {
-        club_id: 36,
+        club_id: this.currentClub.clubId,
         number: '',
         name: '',
         page_num: 1,
