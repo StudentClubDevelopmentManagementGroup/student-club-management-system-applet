@@ -13,15 +13,15 @@
         <p v-else>您所在的社团：{{ clubs[0]?.club_name }}</p>
       </div>
     </div>
-	
+
     <!-- 座位布局部分 -->
     <div id="seat-container" :style="seatContainerStyle" v-if="clubs.length > 0">
       <div id="seat-layout" :style="seatLayoutStyle">
-        <div 
-          class="seat" 
-          v-for="seat in seats" 
-          :key="seat.seat_id" 
-          :style="getSeatStyle(seat)" 
+        <div
+          class="seat"
+          v-for="seat in seats"
+          :key="seat.seat_id"
+          :style="getSeatStyle(seat)"
           :title="getSeatDescription(seat)">
           <div v-if="seat.owner" class="seat-owner">{{ seat.owner.name }}</div>
         </div>
@@ -95,7 +95,7 @@ export default {
       // 计算座位表的大小
       const width = this.seatMaxX - this.seatMinX;
       const height = this.seatMaxY - this.seatMinY;
-	  
+
       // 设置容器大小，留有一些边距
       this.containerWidth = width;
       this.containerHeight = height + 50;
@@ -107,8 +107,8 @@ export default {
     getSeatStyle(seat) {
       return {
         position: 'absolute',
-        left: `${seat.x - this.centerX + this.containerWidth / 2 }px`, 
-        top: `${seat.y - this.centerY + this.containerHeight / 2}px`, 
+        left: `${seat.x - this.centerX + this.containerWidth / 2 }px`,
+        top: `${seat.y - this.centerY + this.containerHeight / 2}px`,
         width: '75px',
         height: '55px',
         backgroundColor: seat.owner ? 'lightblue' : 'lightgray',

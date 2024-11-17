@@ -8,8 +8,8 @@
       <button class="search-btn" @click="fetchDutyData">查询</button>
     </view>
     
-    <!-- 查看自己的签到按钮 -->
-    <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的签到</button>
+    <!-- 查看自己的值日按钮 -->
+    <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
     
     <!-- 动态渲染值日卡片 -->
     <view class="duty-card" v-for="(dutyItem, index) in filteredDutyData" :key="index">
@@ -23,7 +23,7 @@
       </view>
     </view>
     
-    <!-- 如果有自己的签到数据，单独显示 -->
+    <!-- 如果有自己的值日数据，单独显示 -->
     <view v-if="selfDutyData.length > 0">
       <view class="duty-card" v-for="(dutyItem, index) in selfDutyData" :key="index">
         <view class="duty-info">
@@ -49,7 +49,7 @@ export default {
     return {
       clubs: [],               // 社团数据
       dutyData: [],            // 后端返回的所有值日数据
-      selfDutyData: [],        // 用户个人签到的数据
+      selfDutyData: [],        // 用户个人值日的数据
       name: '',                // 查询的姓名
       date: '',                // 查询的时间
       club: '',                // 查询的社团
@@ -71,7 +71,7 @@ export default {
     fetchDutyData() {
       // 清空之前的数据
       this.dutyData.splice(0);  // 使用 splice 清空数组
-      this.selfDutyData.splice(0); // 清空个人签到数据，防止残留数据
+      this.selfDutyData.splice(0); // 清空个人值日数据，防止残留数据
 
       const params = {
         club_id: 36,
@@ -97,10 +97,10 @@ export default {
         });
     },
     
-    // 查询个人签到数据
+    // 查询个人值日数据
     fetchSelfDutyData() {
       // 清空之前的数据
-      this.selfDutyData.splice(0);  // 清空个人签到数据
+      this.selfDutyData.splice(0);  // 清空个人值日数据
       this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
 
       const params = {
