@@ -12,8 +12,8 @@
 			<!-- 获取当天最新签到状态 -->
 			<p>{{ checkInStatus }}</p>
 			<p>{{ checkOutStatus }}</p>
-			<view v-if="attendanceData.userId">
-				<p>本周总计打卡时间: {{ formatDuration(attendanceData.attendanceDurationTime) }}</p>
+			<view v-if="attendanceDuration.userId">
+				<p>本周总计打卡时间: {{ formatDuration(attendanceDuration.attendanceDurationTime) }}</p>
 			</view>
 			<view v-else>
 				<p>加载数据中...</p>
@@ -26,7 +26,7 @@
 				{{ isClockingIn ? '结束打卡' : '开始打卡' }}
 			</button>
 		</view>
-		
+
 	</view>
 </template>
 
@@ -39,7 +39,8 @@
 
 				currentClub: {}, // 存储当前社团信息
 				userInfo: {}, // 存储用户信息
-				attendanceData: {}, // 用对象来存储单个用户的数据
+				attendanceDuration: {}, // 存储考勤时长数据
+				
 				weekStart: "", // 本周开始时间
 				weekEnd: "", // 本周结束时间
 				isClockingIn: false, // 是否正在打卡
@@ -66,6 +67,25 @@
 
 			// 将当前社团信息存储到 data 中
 			this.currentClub = selectedClub;
+
+			// 恢复打卡状态
+			
+
+			
+			// 恢复打卡状态
+			const savedClockingStatus = wx.getStorageSync('isClockingIn');
+			if (savedClockingStatus === 'true') {
+			    this.isClockingIn = true;
+			    const clockStartTime = wx.getStorageSync('clockStartTime');
+			    if (clockStartTime) {
+			        this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 恢复计时
+			        this.timerInterval = setInterval(() => {
+			            this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 继续计时
+			        }, 1000);
+			    }
+			} else {
+			    this.isClockingIn = false;
+			};
 
 			// 发起请求并获取数据
 			this.fetchAttendanceDuration();
@@ -115,7 +135,7 @@
 				const day = String(date.getDate()).padStart(2, '0');
 				return `${year}-${month}-${day} ${time}`;
 			},
-			
+
 			//获取用户当天最新打卡记录
 			async fetchLatestCheckInRecord() {
 				try {
@@ -164,8 +184,8 @@
 
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
-						this.attendanceData = response.data[0];
-						console.log("用户一周打卡时长", this.attendanceData.attendanceDurationTime);
+						this.attendanceDuration = response.data[0];
+						console.log("用户一周打卡时长", this.attendanceDuration.attendanceDurationTime);
 
 					} else {
 						console.error("请求失败:", response.status_text);
@@ -182,16 +202,17 @@
 					const response = await http.post("/attendance/checkIn", {
 						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
 						userId: this.userInfo.userId, // 使用 this.userInfo.userId
-						checkInTime: this.requestFormatDate( new Date(( new Date()).getTime() - 1000) ) 
+						checkInTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
 					});
-					console.log("签到时间前一秒",this.requestFormatDate( new Date( ( new Date()).getTime() - 1000) ) )
+					console.log("签到时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)))
 
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
 						// 假设返回的数据格式中 data 是一个对象
 						this.attendanceData = response.data;
-						console.log("签到成功:", this.attendanceData);
-						this.checkInStatus = `${this.requestFormatDate(new Date(( new Date()).getTime() - 1000) ) }开始打卡`;
+						// console.log("签到成功:", this.attendanceData);
+						this.checkInStatus =
+							`${this.requestFormatDate(new Date(( new Date()).getTime() - 1000) ) }开始打卡`;
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -199,7 +220,7 @@
 					console.error("请求错误:", error);
 				}
 			},
-			
+
 			// 发起签退请求
 			async checkOutRequest() {
 				try {
@@ -207,15 +228,17 @@
 					const response = await http.patch("/attendance/checkout", {
 						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
 						userId: this.userInfo.userId, // 使用 this.userInfo.userId
-						checkoutTime: this.requestFormatDate(new Date(( new Date()).getTime() - 1000) ) 
+						checkoutTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
 					});
-					
+					console.log("签退时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)));
+
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
 						// 假设返回的数据格式中 data 是一个对象
 						this.attendanceData = response.data;
-						console.log("签退成功:", this.attendanceData);
-						this.checkOutStatus = `${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
+						// console.log("签退成功:", this.attendanceData);
+						this.checkOutStatus =
+							`${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -233,35 +256,45 @@
 
 			},
 
+
 			// 切换打卡状态
+
 			toggleClocking() {
-				if (this.isClockingIn) {
-					this.endClockingIn();
-				} else {
-					this.startClockingIn();
-				}
+			    if (this.isClockingIn) {
+			        this.endClockingIn();
+			        wx.setStorageSync('isClockingIn', 'false');
+			    } else {
+			        this.startClockingIn();
+			        wx.setStorageSync('isClockingIn', 'true');
+			    }
 			},
+
 
 			// 开始打卡
 			startClockingIn() {
 				this.checkInRequest();
 				this.isClockingIn = true;
-				this.elapsedTime = 0; // 重置计时
+				const startTime = Date.now(); // 获取当前时间戳
+				wx.setStorageSync('clockStartTime', startTime); // 将时间戳保存到本地
+				//this.elapsedTime = 0; // 重置计时
 				this.timerInterval = setInterval(() => {
 					this.elapsedTime++; // 每秒增加1秒
 				}, 1000);
 			},
-
+			
 			// 结束打卡
 			endClockingIn() {
 				this.checkOutRequest();
-
-				this.isClockingIn = false;
-				clearInterval(this.timerInterval); // 停止计时
-				this.elapsedTime = 0; // 重置计时
+			    this.isClockingIn = false;
+			    clearInterval(this.timerInterval); // 停止计时
+			    this.elapsedTime = 0; // 重置计时
+			    wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
 			},
+			
+
+
 			//获取签到时间前一秒
-			getCurrentTime(){
+			getCurrentTime() {
 				let now = new Date();
 				let oneSecondAgo = new Date(now.getTime() - 1000); // 减去 1000 毫秒，即 1 秒
 				return oneSecondAgo;
@@ -291,6 +324,8 @@
 				clearInterval(this.timerInterval);
 			}
 		},
+		
+		
 	};
 </script>
 
