@@ -1,0 +1,144 @@
+<template>
+  <view id="main-content">
+    <!-- 查询条件 -->
+    <view class="search-container">
+      <input type="text" placeholder="姓名" class="input" v-model="name" />
+      <input type="text" placeholder="时间" class="input" v-model="date" />
+      <input type="text" placeholder="社团" class="input" v-model="club" />
+      <button class="search-btn" @click="fetchDutyData">查询</button>
+    </view>
+
+    <!-- 查看自己的值日按钮 -->
+    <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
+
+    <!-- 动态渲染值日卡片 -->
+    <view class="duty-card" v-for="(dutyItem, index) in filteredDutyData" :key="index">
+      <view class="duty-info">
+        <text class="duty-period">区域：{{ dutyItem.period }}</text>
+        <text>时间：{{ dutyItem.date }}</text>
+        <text>清理者：{{ dutyItem.cleaner_name }}</text>
+        <div class="images">
+          <img v-for="(image, imgIndex) in dutyItem.image_file" :key="imgIndex" :src="image" alt="值日图片" />
+        </div>
+        <!-- 上传图片按钮 -->
+        <button v-if="dutyItem.cleaner_id === userInfo.userId" @click="uploadImage(dutyItem)">上传图片</button>
+      </view>
+    </view>
+
+    <!-- 如果有自己的值日数据，单独显示 -->
+    <view v-if="selfDutyData.length > 0">
+      <view class="duty-card" v-for="(dutyItem, index) in selfDutyData" :key="index">
+        <view class="duty-info">
+          <text class="duty-period">区域：{{ dutyItem.period }}</text>
+          <text>时间：{{ dutyItem.date }}</text>
+          <text>清理者：{{ dutyItem.cleaner_name }}</text>
+          <div class="images">
+            <img v-for="(image, imgIndex) in dutyItem.image_file" :key="imgIndex" :src="image" alt="值日图片" />
+          </div>
+          <!-- 上传图片按钮 -->
+          <button v-if="dutyItem.cleaner_id === userInfo.userId" @click="uploadImage(dutyItem)">上传图片</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+
+
+<script>
+import http from "@/utils/http.ts";
+
+export default {
+  data() {
+    return {
+      currentClub: {}, // 当前社团信息
+      userInfo: {}, // 用户信息
+      seats: [], // 座位信息
+      containerWidth: 0, // 画布宽度
+      containerHeight: 0, // 画布高度
+      seatMinX: 0, // 座位表的最小X坐标
+      seatMaxX: 0, // 座位表的最大X坐标
+      seatMinY: 0, // 座位表的最小Y坐标
+      seatMaxY: 0, // 座位表的最大Y坐标
+    };
+  },
+  onLoad() {
+    const app = getApp();
+    const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
+    const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0; // 当前社团索引
+
+    // 设置当前社团
+    this.currentClub = clubInfo[currentClubIndex] || {};
+
+    // 获取座位信息
+    if (this.currentClub.clubId) {
+      this.fetchSeats();
+    }
+  },
+  methods: {
+    fetchSeats() {
+      http.get('/club/seat/view', { club_id: this.currentClub.clubId })
+        .then(res => {
+          this.seats = res.data;
+          this.calculateSeatBoundaries();
+          this.setContainerSize();
+        })
+        .catch(error => {
+          console.error('Error fetching seats:', error);
+        });
+    },
+    calculateSeatBoundaries() {
+      this.seatMinX = Math.min(...this.seats.map(seat => seat.x));
+      this.seatMaxX = Math.max(...this.seats.map(seat => seat.x));
+      this.seatMinY = Math.min(...this.seats.map(seat => seat.y));
+      this.seatMaxY = Math.max(...this.seats.map(seat => seat.y));
+    },
+    setContainerSize() {
+      const width = this.seatMaxX - this.seatMinX;
+      const height = this.seatMaxY - this.seatMinY;
+
+      this.containerWidth = width;
+      this.containerHeight = height + 50;
+
+      this.centerX = (this.seatMaxX + this.seatMinX) / 2;
+      this.centerY = (this.seatMaxY + this.seatMinY) / 2;
+    },
+    getSeatStyle(seat) {
+      return {
+        position: 'absolute',
+        left: `${seat.x - this.centerX + this.containerWidth / 2}px`,
+        top: `${seat.y - this.centerY + this.containerHeight / 2}px`,
+        width: '75px',
+        height: '55px',
+        backgroundColor: seat.owner ? 'lightblue' : 'lightgray',
+        border: '1px solid #ccc',
+        borderRadius: '5px',
+      };
+    },
+    getSeatDescription(seat) {
+      return seat.description ? seat.description : '空位';
+    }
+  },
+  computed: {
+    seatContainerStyle() {
+      return {
+        position: 'relative',
+        width: `95vw`,
+        height: `80%`,
+        margin: '0 auto',
+      };
+    },
+    seatLayoutStyle() {
+      return {
+        position: 'relative',
+        width: `${this.containerWidth}px`,
+        height: `${this.containerHeight}px`,
+      };
+    }
+  }
+};
+</script>
+
+<style lang="css" scoped>
+  @import url(./seat.css);
+</style>

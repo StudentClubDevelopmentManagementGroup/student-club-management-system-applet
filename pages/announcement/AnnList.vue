@@ -1,4 +1,5 @@
 <template>
+
   <view class="main">
 
     <view class="header">
@@ -71,6 +72,7 @@
     </view>
 
   </view>
+
 </template>
 
 <script setup>

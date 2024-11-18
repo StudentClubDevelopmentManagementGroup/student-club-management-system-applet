@@ -44,9 +44,10 @@ const req = (url: string, method: any, data: object) => uni.request({
 	return res.data;
 })
 
-const http = {	
+const http = {
 	post: (url: string, data: object) => req(url, 'POST', data),
 	get: (url: string, data: object) => req(url, 'GET', data),
+	patch: (url: string, data: object) => req(url, 'PATCH', data),
 }
 
 export default http;
