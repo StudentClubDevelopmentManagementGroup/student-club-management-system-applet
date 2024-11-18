@@ -86,6 +86,13 @@
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+			"path" : "pages/report-bug/ReportBug",
+			"style" :
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
 	],
 

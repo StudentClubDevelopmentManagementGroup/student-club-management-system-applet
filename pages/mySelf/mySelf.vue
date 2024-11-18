@@ -36,7 +36,7 @@
 				<image src="../../static/svgs/mySelf_help.svg"></image>
 				<text>帮助中心</text>
 			</view>
-			<view class="item" @click="developing()">
+			<view class="item" @click="reportBug()">
 				<image src="../../static/svgs/mySelf_issue.svg"></image>
 				<text>问题反馈</text>
 			</view>
@@ -116,6 +116,11 @@
 					icon: "none"
 				})
 				return
+			},
+			reportBug() {
+				uni.nevigateTo({
+					url: "/pages/report-bug/ReportBug"
+				})
 			}
 		}
 	}
