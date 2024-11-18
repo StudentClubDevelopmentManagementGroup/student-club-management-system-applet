@@ -1,12 +1,12 @@
 <template>
-	<view>
+	<view class="container">
 		<!-- 第一部分：选择开始时间和结束时间，点击查询按钮 -->
 		<view class="search-section">
-			<view>
+			<view class="input-group">
 				<text>开始时间：</text>
 				<input type="date" v-model="startTime" />
 			</view>
-			<view>
+			<view class="input-group">
 				<text>结束时间：</text>
 				<input type="date" v-model="endTime" />
 			</view>
@@ -14,18 +14,15 @@
 		</view>
 
 		<!-- 第二部分：展示考勤记录 -->
-		<view class="attendance-list">
+		<scroll-view
+			class="attendance-list"
+			scroll-y
+			:scroll-with-animation="true"
+			@scrolltolower="loadMoreRecords"
+		>
 			<view v-if="attendanceRecords.length > 0">
-				<view v-for="(record, index) in attendanceRecords" :key="index">
-					<view>
-						<text>部门：{{ record.departmentName }}</text>
-					</view>
-					<view>
-						<text>俱乐部：{{ record.clubName }}</text>
-					</view>
-					<view>
-						<text>用户名：{{ record.userName }}</text>
-					</view>
+				<view v-for="(record, index) in attendanceRecords" :key="index" class="record-item">
+
 					<view>
 						<text>签到时间：{{ record.checkInTime }}</text>
 					</view>
@@ -33,19 +30,20 @@
 						<text>签退时间：{{ record.checkoutTime }}</text>
 					</view>
 					<view>
-						<text>出勤时长：{{ record.attendanceDuration }} 分钟</text>
-					</view>
-					<view>
-						<hr />
+						<text>出勤时长：{{ formatDuration(record.attendanceDuration) }} </text>
 					</view>
 				</view>
 			</view>
 			<view v-else>
 				<text>没有符合条件的出勤记录。</text>
 			</view>
+		</scroll-view>
 
-			<!-- 加载更多按钮 -->
-			<button v-if="currentPage < totalPages" @click="loadMoreRecords">查看更多考勤记录</button>
+		<!-- 底部加载更多按钮 -->
+		<view v-if="currentPage < totalPages" class="load-more-section">
+			<button @click="loadMoreRecords" :disabled="isLoading">
+				{{ isLoading ? '加载中...' : '加载更多' }}
+			</button>
 		</view>
 	</view>
 </template>
@@ -56,38 +54,55 @@
 	export default {
 		data() {
 			return {
-
 				currentClub: {}, // 存储当前社团信息
 				userInfo: {}, // 存储用户信息
 				startTime: "", // 开始时间
 				endTime: "", // 结束时间
 				attendanceRecords: [], // 存储考勤记录
 				currentPage: 1, // 当前页数
-				pageSize: 5, // 每页记录数
-				totalPages: 1 // 总页数
+				pageSize: 6, // 每页记录数
+				totalPages: 1, // 总页数
+				isLoading: false // 加载状态
 			};
 		},
-
 
 		onLoad() {
 			// 获取全局数据
 			const app = getApp();
 			const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
-			// 获取用户信息
 			const userInfo = app.globalData.userData?.userInfo || {};
 			this.userInfo = userInfo; // 将用户信息存储到 data 中
 
 			// 获取当前选中的社团索引，确保全局数据的正确访问
 			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
-
-			// 根据当前选择的社团下标获取当前社团信息
 			const selectedClub = clubInfo[currentClubIndex] || {};
-
-			// 将当前社团信息存储到 data 中
-			this.currentClub = selectedClub;
+			this.currentClub = selectedClub; // 将当前社团信息存储到 data 中
+			
+			this.loadMoreRecords();
 		},
 
 		methods: {
+			// 将时间格式化为 yyyy-mm-dd hh:mm:ss
+			requestFormatDate(date) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				const hours = String(date.getHours()).padStart(2, '0');
+				const minutes = String(date.getMinutes()).padStart(2, '0');
+				const seconds = String(date.getSeconds()).padStart(2, '0');
+				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+			},
+			
+			// 将秒数转换为时:分:秒格式
+			formatDuration(seconds) {
+				const hours = Math.floor(seconds / 3600);
+				const minutes = Math.floor((seconds % 3600) / 60);
+				const remainingSeconds = seconds % 60;
+				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+			
+			},
+			
+
 			// 查询出勤记录
 			async searchAttendance() {
 				this.currentPage = 1; // 重置当前页为 1
@@ -96,73 +111,83 @@
 			},
 
 			// 加载考勤记录
+			
 			async loadMoreRecords() {
+				if (this.isLoading || this.currentPage > this.totalPages) return;
+				this.isLoading = true;
+			
 				try {
 					const response = await http.post("/attendance/record", {
-
-						clubId: 36, // 社团ID
-						userName: "", // 用户名（可以从全局状态或其他方式获取）
-						userId: "", // 用户ID（可以从全局数据中获取）
-						startTime: "", // 开始时间
-						endTime: "", // 结束时间
-						currentPage: this.currentPage, // 当前页
-						pageSize: 2 // 每页显示记录数
+						clubId: this.currentClub.clubId,
+						userName: "",
+						userId: this.userInfo.userId,
+						startTime: this.startTime,
+						endTime: this.endTime,
+						currentPage: this.currentPage,
+						pageSize: this.pageSize
 					});
 					if (response.data && response.data.records) {
-						// 如果是第一页，清空已有数据
-						if (this.currentPage === 1) {
-
-							this.attendanceRecords = response.data.records;
-
-						} else {
-
-							this.attendanceRecords = [...this.attendanceRecords, ...response.data.records];
-						}
-						this.totalPages = response.data.total_pages; // 设置总页数
+						// 过滤掉 isDeleted 为 true 的记录
+						const validRecords = response.data.records.filter(record => !record.isDeleted);
+			
+						this.attendanceRecords = [
+							...this.attendanceRecords,
+							...validRecords
+						];
+						this.totalPages = response.data.total_pages;
+						this.currentPage++;
 					}
 				} catch (error) {
 					console.error("获取出勤记录时出错：", error);
-
+				} finally {
+					this.isLoading = false;
 				}
 			}
-		},
 
-		watch: {
-			//监听 currentPage 的变化，加载更多数据
-			currentPage(newPage) {
-				if (newPage > 1) {
-					this.loadMoreRecords();
-				}
-			}
 		}
 	};
 </script>
 
 <style scoped>
-	/* 样式部分： */
-
-	.search-section {
-		margin-bottom: 20px;
+	.container {
+		display: flex;
+		flex-direction: column;
+		height: 100vh; /* 占满整个屏幕高度 */
 	}
 
-	.search-section view {
+	.search-section {
+		flex: 0 0 auto;
+		padding: 10px;
+		background-color: #f7f7f7;
+		border-bottom: 1px solid #ddd;
+	}
+
+	.input-group {
 		margin-bottom: 10px;
+		display: flex;
+		align-items: center;
 	}
 
 	.attendance-list {
-		margin-top: 20px;
+		flex: 1; /* 占据剩余空间 */
+		overflow-y: auto;
+		background-color: #fff;
+	}
+	
+	.record-item {
+		padding: 15px;
+		border-bottom: 1px solid #e0e0e0;
 	}
 
-	button {
-		margin-top: 20px;
+	.load-more-section {
 		padding: 10px;
-		background-color: #4CAF50;
-		color: white;
-		border: none;
-		cursor: pointer;
+		text-align: center;
+		background-color: #f7f7f7;
 	}
 
-	button:hover {
-		background-color: #45a049;
+	.loading {
+		text-align: center;
+		color: #666;
+		padding: 10px;
 	}
 </style>
