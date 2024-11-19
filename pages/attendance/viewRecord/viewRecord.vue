@@ -50,7 +50,7 @@ export default {
 
 			attendanceRecords: [], // 存储考勤记录
 			currentPage: 1, // 当前页数
-			pageSize: 8, // 每页记录数
+			pageSize: 7, // 每页记录数
 			totalPages: 1, // 总页数
 			isLoading: false // 加载状态
 		};
