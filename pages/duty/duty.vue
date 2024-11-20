@@ -7,10 +7,10 @@
       <input type="text" placeholder="社团" class="input" v-model="club" />
       <button class="search-btn" @click="fetchDutyData">查询</button>
     </view>
-    
+
     <!-- 查看自己的值日按钮 -->
     <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
-    
+
     <!-- 动态渲染值日卡片 -->
     <view class="duty-card" v-for="(dutyItem, index) in filteredDutyData" :key="index">
       <view class="duty-info">
@@ -24,7 +24,7 @@
         <button v-if="dutyItem.cleaner_id === userInfo.userId" @click="uploadImage(dutyItem)">上传图片</button>
       </view>
     </view>
-    
+
     <!-- 如果有自己的值日数据，单独显示 -->
     <view v-if="selfDutyData.length > 0">
       <view class="duty-card" v-for="(dutyItem, index) in selfDutyData" :key="index">
@@ -46,6 +46,7 @@
 <script>
 import http from "@/utils/http.ts";
 import tools from "@/utils/tools.js";
+import {baseUrl} from "@/private/backendInfo.ts"
 
 export default {
   data() {
@@ -149,47 +150,51 @@ export default {
         });
     },
 
-    uploadImage(dutyItem) {
-      wx.chooseImage({
-        count: 4,
-        sizeType: ["compressed"],
-        sourceType: ["album", "camera"],
-        success: (res) => {
-          const files = res.tempFilePaths; // 获取选择的图片路径
-          const formData = new FormData();
-          const dateTime = dutyItem.date; // 获取日期
-          console.log("值日时间：", dateTime);
-      
-          // 直接构建查询参数
-          const url = `/club/duty/report_results?date_time=${encodeURIComponent(dateTime)}&member_id=${this.userInfo.userId}&club_id=${this.currentClub.clubId}`;
-      
-          // 将每个文件添加到 formData
-          files.forEach((file, index) => {
-            formData.append("file", {
-              uri: file,
-              name: `file[${index}]`,  // 确保 name 字段与后端接收一致
-              type: "image/jpeg",  // 或者根据文件格式设置
-            });
-          });
-      
-          // 发送请求上传图片，不设置 Content-Type 让浏览器/微信小程序处理
-          http.post(url, formData)
-            .then((uploadRes) => {
-              if (uploadRes.status_code === 200) {
-                console.log("图片上传成功", uploadRes);
-                // 成功后将图片文件添加到 dutyItem
-                dutyItem.image_file.push(...files);
-              }
-            })
-            .catch((error) => {
-              console.error("图片上传失败:", error);
-            });
-        },
-        fail: (err) => {
-          console.error("选择图片失败:", err);
-        },
+
+uploadImage(dutyItem) {
+  wx.chooseImage({
+    count: 4,
+    sizeType: ["compressed"],
+    sourceType: ["album", "camera"],
+    success: (res) => {
+      const files = res.tempFilePaths; // 获取选择的图片路径
+
+      // 遍历文件，上传每一张
+      files.forEach((filePath, index) => {
+        // 使用 wx.uploadFile 上传文件
+        wx.uploadFile({
+          url: `${baseUrl}/club/duty/report_results`, // 后端上传接口
+          filePath: filePath, // 本地文件路径
+          name: 'file', // 后端接收的文件字段名
+          formData: {
+            date_time: dutyItem.date, // 时间
+            member_id: this.userInfo.userId, // 用户ID
+            club_id: this.currentClub.clubId, // 社团ID
+          },
+          success: (uploadRes) => {
+            const resData = JSON.parse(uploadRes.data); // 解析返回的数据
+            if (resData.status_code === 200) {
+              console.log("图片上传成功", resData);
+              dutyItem.image_file.push(filePath);  // 将上传的图片添加到页面
+            } else {
+              console.error("上传失败，服务器返回错误:", resData);
+            }
+          },
+          fail: (err) => {
+            console.error("图片上传失败:", err);
+          }
+        });
       });
-    }
+    },
+    fail: (err) => {
+      console.error("选择图片失败:", err);
+    },
+  });
+}
+
+
+
+
 
 
 
