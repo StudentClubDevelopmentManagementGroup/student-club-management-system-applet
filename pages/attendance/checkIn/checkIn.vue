@@ -127,6 +127,8 @@
 				// 设置时间格式为 "yyyy-mm-dd 00:00:00" 和 "yyyy-mm-dd 23:59:59"
 				this.weekStart = this.formatDate(monday, "00:00:00");
 				this.weekEnd = this.formatDate(sunday, "23:59:59");
+				console.log("本周一时间",this.weekStart);
+				console.log("本周日时间",this.weekEnd);
 			},
 
 			formatDate(date, time) {
@@ -251,7 +253,7 @@
 				const hours = Math.floor(seconds / 3600);
 				const minutes = Math.floor((seconds % 3600) / 60);
 				const remainingSeconds = seconds % 60;
-				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+				return `${hours}小时${minutes}分钟${remainingSeconds}秒`;
 
 			},
 
@@ -302,7 +304,7 @@
 			},
 
 
-			// 获取当前时间并格式化为 yyyy-mm-dd hh:mm:ss
+			// 将时间格式化为 yyyy-mm-dd hh:mm:ss
 
 			requestFormatDate(date) {
 				const year = date.getFullYear();
