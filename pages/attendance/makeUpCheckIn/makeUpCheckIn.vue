@@ -14,36 +14,40 @@
 							<text>签到时间：{{ record.checkInTime }}</text>
 						</view>
 						<view>
-							<text>签退时间：{{ record.checkoutTime }}</text>
+							<text>签退时间：{{ "未签退"  }}</text>
 						</view>
-						<!-- 弹出选择日期和时间的区域 -->
+
 						<view v-if="showPickerDialog" class="picker-dialog">
 							<view class="picker-container">
+								<!-- 顶部信息 -->
 								<view>
 									<view>
 										<text>签到时间：{{ record.checkInTime }}</text>
 									</view>
 									<view>
-										<text>签退时间：{{ selectedDateTime || "未签退"}}</text>
+										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
 									</view>
 								</view>
 
+								<!-- 时间选择器 -->
 								<view>
-									<!-- 日期选择器 -->
-									<picker mode="date" @change="onDateChange">
-										<button type="default">选择日期</button>
-									</picker>
-									<!-- 时间选择器 -->
-									<picker mode="time" @change="onTimeChange">
+									<picker mode="time" @change="(e) => onTimeChange(e, record.checkInTime)">
 										<button type="default">选择时间</button>
 									</picker>
-									<!-- 关闭弹窗按钮 -->
-									<button type="default" @click="closePickerDialog">关闭</button>
 								</view>
 
-
+								<!-- 底部按钮区域 -->
+								<view class="picker-actions">
+									<!-- 关闭按钮 -->
+									<button class="close-btn" @click="closePickerDialog(record)">关闭</button>
+									<!-- 申请补卡按钮 -->
+									<button class="replenish-btn"
+										@click="replenish(record.checkInTime, selectedDateTime)">确认申请补卡</button>
+								</view>
 							</view>
 						</view>
+
+
 					</view>
 
 					<!-- 右侧申请补卡按钮 -->
@@ -77,6 +81,7 @@
 				selectedTime: "", // 选择的时间（时分秒）
 				selectedDateTime: "", // 完整的日期时间
 				showPickerDialog: false, // 控制弹窗显示
+				checkOutTime: "",
 			};
 		},
 
@@ -94,6 +99,7 @@
 			this.loadAllRecords();
 		},
 
+
 		methods: {
 			// 显示选择日期和时间的弹窗
 			showPicker() {
@@ -104,32 +110,26 @@
 				this.showPickerDialog = false;
 			},
 
-			// 日期改变事件
-			onDateChange(e) {
-				this.selectedDate = e.detail.value; // 获取用户选择的日期
-				this.updateSelectedDateTime();
-			},
 			// 时间改变事件
-			onTimeChange(e) {
-				const time = e.detail.value; // 获取用户选择的时间（如 12:30）
-				this.selectedTime = `${time}:00`; // 自动补全秒位
-				this.updateSelectedDateTime();
+			onTimeChange(e, checkInTime) {
+				const time = e.detail.value;
+				this.selectedTime = `${time}:00`;
+				this.updateSelectedDateTime(checkInTime);
 			},
 
 			// 更新完整的日期时间显示
-			updateSelectedDateTime() {
-				if (this.selectedDate && this.selectedTime) {
-					this.selectedDateTime = `${this.selectedDate} ${this.selectedTime}`;
+			updateSelectedDateTime(checkInTime) {
+				if (this.selectedTime) {
+					this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
 				} else {
-					this.selectedDateTime = ""; // 如果未选择完整时间则清空
+					this.selectedDateTime = "";
 				}
 			},
 
 
+
 			// 加载所有数据
 			async loadAllRecords() {
-
-
 				try {
 					const response = await http.get("/attendance/getUnCheckOutRecord", {
 						clubId: this.currentClub.clubId,
@@ -145,53 +145,25 @@
 				}
 			},
 
-			// 点击申请补卡的方法
-			applyForMakeup(record) {
-				// 弹出确认框，展示签到和签退时间
-				uni.showModal({
-					title: "补卡信息",
-					content: `签到时间：${record.checkInTime}\n签退时间：${record.checkoutTime}`,
-					success: (modalRes) => {
-						if (modalRes.confirm) {
-							// 用户点击了确认按钮，执行补卡申请操作
-							this.submitMakeupRequest(record);
-						}
-					},
-				});
-			},
-
-
-			// 提交补卡请求
-			async submitMakeupRequest(record) {
-
-
+			// 补签请求
+			async replenish(checkInTime, selectedDateTime) {
 				try {
-					// 假设调用一个补卡接口
-					const response = await http.post("/attendance/makeup", {
+					const response = await http.post("/attendance/replenish", {
 						clubId: this.currentClub.clubId,
 						userId: this.userInfo.userId,
-						recordId: record.id // 传递当前记录的ID
-					});
+						checkInTime: checkInTime,
+						checkoutTime: selectedDateTime,
 
+					});
 					if (response.status_code === 200) {
-						uni.showToast({
-							title: '补卡申请成功',
-							icon: 'success'
-						});
-					} else {
-						uni.showToast({
-							title: '补卡申请失败',
-							icon: 'none'
-						});
+						this.attendanceRecords = response.data;
+						console.log('this.attendanceRecords', this.attendanceRecords);
 					}
 				} catch (error) {
-					uni.showToast({
-						title: '提交补卡请求失败',
-						icon: 'none'
-					});
-					console.error("补卡申请失败：", error);
+					console.error("获取全量出勤记录时出错：", error);
 				}
 			},
+
 
 
 		}
@@ -282,5 +254,31 @@
 		background-color: white;
 		padding: 60px;
 		border-radius: 10px;
+		width: 80%;
+	}
+
+	.picker-actions {
+		display: flex;
+		justify-content: space-between;
+		/* 两端对齐 */
+		margin-top: 20px;
+	}
+
+	.close-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+	.replenish-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
 	}
 </style>
