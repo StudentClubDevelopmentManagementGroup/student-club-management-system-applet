@@ -118,7 +118,7 @@
 				return
 			},
 			reportBug() {
-				uni.nevigateTo({
+				uni.navigateTo({
 					url: "/pages/report-bug/ReportBug"
 				})
 			}
