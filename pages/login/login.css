@@ -133,7 +133,7 @@
 
 
 .email-login {
-	position: fixed;
+	position: absolute;
 	height: 180px;
 	width: 85%;
 	display: flex;
