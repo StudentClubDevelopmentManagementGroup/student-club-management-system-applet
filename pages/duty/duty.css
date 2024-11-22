@@ -50,11 +50,11 @@
   white-space: nowrap; /* 禁止换行 */
 }
 
-/* 查看自己签到按钮 */
+/* 查看自己值日按钮 */
 .self-duty-btn {
   position: fixed;
   top: 0; /* 距离顶部0px，紧贴导航栏 */
-  left: 68%; /* 定位到页面的水平中间 */
+  right: 0%; /* 定位到页面的水平中间 */
   background-color: #28a745;
   color: white;
   padding: 3px 10px;
