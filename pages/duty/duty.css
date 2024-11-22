@@ -5,6 +5,7 @@
   align-items: center;
   width: 100%;
   height: max-content;
+  min-height: calc(100vh - 44px);
   background-image: url('/static/images/背景.jpg');
   background-size: cover; /* 使背景图像铺满容器 */
   background-repeat: no-repeat;
