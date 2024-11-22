@@ -24,22 +24,27 @@
 									<view>
 										<text>签到时间：{{ record.checkInTime }}</text>
 									</view>
+									<br>
 									<view>
 										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
+
 									</view>
+									<br>
 								</view>
 
+
 								<!-- 时间选择器 -->
-								<view>
-									<picker mode="time" @change="(e) => onTimeChange(e, record.checkInTime)">
-										<button type="default">选择时间</button>
+								<view class="time-selector">
+									<picker mode="time" :start="getStartTime(record.checkInTime)"
+										@change="(e) => onTimeChange(e, record.checkInTime)">
+										<button type="default">选择签退时间</button>
 									</picker>
 								</view>
 
 								<!-- 底部按钮区域 -->
 								<view class="picker-actions">
 									<!-- 关闭按钮 -->
-									<button class="close-btn" @click="closePickerDialog(record)">关闭</button>
+									<button class="close-btn" @click="closePickerDialog()">关闭</button>
 									<!-- 申请补卡按钮 -->
 									<button class="replenish-btn"
 										@click="replenish(record.checkInTime, selectedDateTime)">确认申请补卡</button>
@@ -95,7 +100,7 @@
 			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
 			const selectedClub = clubInfo[currentClubIndex] || {};
 			this.currentClub = selectedClub; // 将当前社团信息存储到 data 中
-			// 先加载一条数据以获取总记录数，然后加载所有数据
+			
 			this.loadAllRecords();
 		},
 
@@ -109,11 +114,14 @@
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
+			getStartTime(checkInTime) {
+				return checkInTime.split(" ")[1].substring(0, 5);
+			},
 
 			// 时间改变事件
 			onTimeChange(e, checkInTime) {
 				const time = e.detail.value;
-				this.selectedTime = `${time}:00`;
+				this.selectedTime = `${time}:59`;
 				this.updateSelectedDateTime(checkInTime);
 			},
 
@@ -153,16 +161,38 @@
 						userId: this.userInfo.userId,
 						checkInTime: checkInTime,
 						checkoutTime: selectedDateTime,
-
 					});
+
 					if (response.status_code === 200) {
+						// 关闭弹窗
+						this.closePickerDialog();
+						this.loadAllRecords();
+						// 更新考勤记录
 						this.attendanceRecords = response.data;
 						console.log('this.attendanceRecords', this.attendanceRecords);
+						// 显示补签成功提示
+						uni.showToast({
+							title: '补签成功',
+							icon: 'success',
+							duration: 2000,
+						});
+					} else {
+						// 提示输入时间
+						uni.showToast({
+							title: '请输入有效的时间',
+							icon: 'none',
+							duration: 2000,
+						});
 					}
 				} catch (error) {
-					console.error("获取全量出勤记录时出错：", error);
+					console.error("补签请求时出错：", error);
+					uni.showToast({
+						title: '请求失败，请稍后再试',
+						icon: 'none',
+						duration: 2000,
+					});
 				}
-			},
+			}
 
 
 
