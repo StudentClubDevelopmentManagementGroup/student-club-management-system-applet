@@ -1,45 +1,24 @@
 <template>
-  <view id="main-content">
-    <!-- 查询条件 -->
-    <view class="search-container">
-      <input type="text" placeholder="姓名" class="input" v-model="name" />
-      <input type="text" placeholder="时间" class="input" v-model="date" />
-      <input type="text" placeholder="社团" class="input" v-model="club" />
-      <button class="search-btn" @click="fetchDutyData">查询</button>
-    </view>
+  <view id="main-content" style="background-image: url('/static/images/背景.jpg');">
+    <!-- 显示当前社团的名称 -->
+    <div id="club-selection">
+      <p v-if="!currentClub.clubName">你还没有加入社团</p>
+      <p v-else>您所在的社团：{{ currentClub.clubName }}</p>
+    </div>
 
-    <!-- 查看自己的值日按钮 -->
-    <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
-
-    <!-- 动态渲染值日卡片 -->
-    <view class="duty-card" v-for="(dutyItem, index) in filteredDutyData" :key="index">
-      <view class="duty-info">
-        <text class="duty-period">区域：{{ dutyItem.period }}</text>
-        <text>时间：{{ dutyItem.date }}</text>
-        <text>清理者：{{ dutyItem.cleaner_name }}</text>
-        <div class="images">
-          <img v-for="(image, imgIndex) in dutyItem.image_file" :key="imgIndex" :src="image" alt="值日图片" />
+    <!-- 座位布局部分 -->
+    <div id="seat-container" :style="seatContainerStyle" v-if="currentClub.clubName">
+      <div id="seat-layout" :style="seatLayoutStyle">
+        <div
+            class="seat"
+            v-for="seat in seats"
+            :key="seat.seat_id"
+            :style="getSeatStyle(seat)"
+            :title="getSeatDescription(seat)">
+          <div v-if="seat.owner" class="seat-owner">{{ seat.owner.name }}</div>
         </div>
-        <!-- 上传图片按钮 -->
-        <button v-if="dutyItem.cleaner_id === userInfo.userId" @click="uploadImage(dutyItem)">上传图片</button>
-      </view>
-    </view>
-
-    <!-- 如果有自己的值日数据，单独显示 -->
-    <view v-if="selfDutyData.length > 0">
-      <view class="duty-card" v-for="(dutyItem, index) in selfDutyData" :key="index">
-        <view class="duty-info">
-          <text class="duty-period">区域：{{ dutyItem.period }}</text>
-          <text>时间：{{ dutyItem.date }}</text>
-          <text>清理者：{{ dutyItem.cleaner_name }}</text>
-          <div class="images">
-            <img v-for="(image, imgIndex) in dutyItem.image_file" :key="imgIndex" :src="image" alt="值日图片" />
-          </div>
-          <!-- 上传图片按钮 -->
-          <button v-if="dutyItem.cleaner_id === userInfo.userId" @click="uploadImage(dutyItem)">上传图片</button>
-        </view>
-      </view>
-    </view>
+      </div>
+    </div>
   </view>
 </template>
 

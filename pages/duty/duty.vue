@@ -2,15 +2,30 @@
   <view id="main-content">
     <!-- 查询条件 -->
     <view class="search-container">
-      <input type="text" placeholder="姓名" class="input" v-model="name" />
-      <input type="text" placeholder="时间" class="input" v-model="date" />
-      <input type="text" placeholder="社团" class="input" v-model="club" />
-      <button class="search-btn" @click="fetchDutyData">查询</button>
+	  <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
+      <button class="search-btn" @click="showPopup">更多查询 V</button>
     </view>
-
-    <!-- 查看自己的值日按钮 -->
-    <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
-
+    <!-- 条件查询弹窗 -->
+	<view v-show="isShowingPopup" class="fliter-popup">
+		<view class="fliter-popup-mask" @click="hidePopup"></view>
+		<view class="fliter-popup-content">
+			<view style="display: flex; flex-direction: row; margin: 5px;">
+				<text>姓名:</text>
+				<input type="text" placeholder="请输入姓名" v-model="name" />
+			</view>
+			<view style="display: flex; flex-direction: row;margin: 5px;">
+				<text>日期:</text>
+				<input type="text" placeholder="请输入年月日,用'-'分隔" v-model="date" />
+			</view>
+			<view style="display: flex; flex-direction: row;margin: 5px;">
+				<text>社团:</text>
+				<input type="text" placeholder="请输入社团名称" v-model="club" />
+			</view>
+			<button class="search-btn" @click="()=>{ hidePopup(); fetchDutyData()}">完成</button>
+		</view>
+	</view>
+	
+    
     <!-- 动态渲染值日卡片 -->
     <view class="duty-card" v-for="(dutyItem, index) in filteredDutyData" :key="index">
       <view class="duty-info">
@@ -26,7 +41,7 @@
     </view>
 
     <!-- 如果有自己的值日数据，单独显示 -->
-    <view v-if="selfDutyData.length > 0">
+    <view v-if="selfDutyData.length > 0" style="display: flex; justify-content: center; width: 100%;">
       <view class="duty-card" v-for="(dutyItem, index) in selfDutyData" :key="index">
         <view class="duty-info">
           <text class="duty-period">区域：{{ dutyItem.period }}</text>
@@ -59,6 +74,7 @@ export default {
       name: "", // 查询的姓名
       date: "", // 查询的时间
       club: "", // 查询的社团
+	  isShowingPopup:false,
     };
   },
   computed: {
@@ -88,6 +104,13 @@ export default {
     }
   },
   methods: {
+	//开启查询下拉菜单  
+    showPopup(){
+		this.isShowingPopup = true
+	},
+	hidePopup(){
+		this.isShowingPopup = false
+	},
     // 查询所有值日数据
     fetchDutyData() {
       // 清空之前的数据
