@@ -66,7 +66,7 @@
         </view>
         <view class="display-3-line">{{ ann.summary }}</view>
       </view>
-      <view class="ann-list-load-more" @click="loadNextPageAnn">
+      <view class="ann-list-load-more" @click="loadNextPageAnn(false)">
         {{ isAllLoaded ? (searchFilter.pageNum == 1 ? "没有相关公告" : "已加载全部") : (isLoading ? "加载中..." : "点击加载更多") }}
       </view>
     </view>
@@ -152,8 +152,9 @@
         return
       }
 
-      if (clearAll)
+      if (clearAll) {
         annList.value = []
+      }
 
       annList.value.push(...res.data.records)
 
