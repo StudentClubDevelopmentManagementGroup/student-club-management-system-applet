@@ -19,28 +19,40 @@
 						<!-- 弹出选择日期和时间的区域 -->
 						<view v-if="showPickerDialog" class="picker-dialog">
 							<view class="picker-container">
+								<!-- 顶部信息 -->
 								<view>
 									<view>
-										<text>签到时间：{{ record.checkInTime }}</text>
+										<text>签到时间：{{ selectedRecord.checkInTime }}</text>
 									</view>
 									<view>
 										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
 									</view>
+
 								</view>
-								<view>
-									<!-- 时间选择器 -->
-									<picker mode="time" @change="(e) => onTimeChange(e, record.checkInTime)">
-										<button type="default">选择时间</button>
+
+
+								<!-- 时间选择器 -->
+								<view class="time-selector">
+									<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
+										@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
+										<button type="default">选择签退时间</button>
 									</picker>
-									<!-- 关闭弹窗按钮 -->
-									<button type="default" @click="closePickerDialog">关闭</button>
+								</view>
+
+								<!-- 底部按钮区域 -->
+								<view class="picker-actions">
+									<!-- 关闭按钮 -->
+									<button class="close-btn" @click="closePickerDialog()">关闭</button>
+									<!-- 申请补卡按钮 -->
+									<button class="replenish-btn"
+										@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
 								</view>
 							</view>
 						</view>
 					</view>
 					<!-- 右侧申请补卡按钮 -->
 					<view class="apply-makeup-btn">
-						<button @click="showPicker">申请补卡</button>
+						<button @click="showPicker(record)">申请补卡</button>
 					</view>
 				</view>
 			</view>
@@ -55,6 +67,7 @@
 				{{ isLoading ? "加载中..." : "加载更多" }}
 			</button>
 		</view>
+
 		<view class="loading" v-else>
 			<text>没有更多记录了~</text>
 		</view>
@@ -72,12 +85,14 @@
 				attendanceRecords: [], // 考勤记录
 				selectedDate: "", // 日期
 				selectedTime: "", // 时间
-				selectedDateTime: "", // 完整日期时间
+				selectedDateTime: "", // 用户选择完整日期时间
 				showPickerDialog: false, // 弹窗显示控制
 				currentPage: 1, // 当前页码
 				pageSize: 8, // 每页显示数量
 				noMoreData: false, // 是否还有更多数据
 				isLoading: false, // 是否正在加载
+				checkOutTime: "",
+				selectedRecord: null, // 用来存储当前选中的考勤记录
 			};
 		},
 
@@ -94,26 +109,36 @@
 
 		methods: {
 			// 显示弹窗
-			showPicker() {
-				this.showPickerDialog = true;
+			showPicker(record) {
+			  this.selectedRecord = record;  // 将当前记录保存到 selectedRecord
+			  this.selectedDateTime = record.checkoutTime || "";  // 如果已有签退时间，就传递它
+			  this.showPickerDialog = true;  // 显示弹窗
 			},
+
 			// 关闭弹窗
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
-			// 时间选择事件
+
+			//时间选择器开始时间
+			getStartTime(checkInTime) {
+				return checkInTime.split(" ")[1].substring(0, 5);
+			},
+			// 时间改变事件
 			onTimeChange(e, checkInTime) {
 				const time = e.detail.value;
-				this.selectedTime = `${time}:00`;
+				this.selectedTime = `${time}:59`;
 				this.updateSelectedDateTime(checkInTime);
 			},
+
 			// 更新日期时间
 			updateSelectedDateTime(checkInTime) {
-				if (this.selectedTime) {
-					this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
-				} else {
-					this.selectedDateTime = "";
-				}
+			  if (this.selectedTime) {
+			    this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
+			    this.selectedRecord.checkoutTime = this.selectedDateTime;  // 更新当前记录的签退时间
+			  } else {
+			    this.selectedDateTime = "";
+			  }
 			},
 			// 加载考勤记录
 			async loadAllRecords() {
@@ -130,7 +155,15 @@
 
 					if (response.status_code === 200) {
 						const newRecords = response.data.records;
-						this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
+						// 给每个记录添加 checkoutTime 字段
+						this.attendanceRecords = [
+							...this.attendanceRecords,
+							...newRecords.map(record => ({
+								...record,
+								checkoutTime: ''  // 每个记录添加一个空的 checkoutTime
+							}))
+						];						
+						// this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
 
 						// 判断是否还有更多数据
 						if (newRecords.length < this.pageSize) {
@@ -145,10 +178,57 @@
 					this.isLoading = false; // 加载结束
 				}
 			},
+
 			// 加载更多记录
 			loadMoreRecords() {
 				this.loadAllRecords();
 			},
+
+			// 补签请求
+			async replenish(checkInTime, selectedDateTime) {
+				console.log("补签签到时间", checkInTime);
+				console.log("补签签退时间", selectedDateTime);
+				try {
+					const response = await http.post("/attendance/replenish", {
+						clubId: this.currentClub.clubId,
+						userId: this.userInfo.userId,
+						checkInTime: checkInTime,
+						checkoutTime: selectedDateTime,
+					});
+
+					if (response.status_code === 200) {
+						// 关闭弹窗
+						this.closePickerDialog();
+						this.loadAllRecords();
+						// 更新考勤记录
+						this.attendanceRecords = response.data;
+						console.log('this.attendanceRecords', this.attendanceRecords);
+						// 显示补签成功提示
+						uni.showToast({
+							title: '补签成功',
+							icon: 'success',
+							duration: 2000,
+						});
+					} else {
+						// 提示输入时间
+						uni.showToast({
+							title: '请输入有效的时间',
+							icon: 'none',
+							duration: 2000,
+						});
+					}
+				} catch (error) {
+					console.error("补签请求时出错：", error);
+					uni.showToast({
+						title: '请求失败，请稍后再试',
+						icon: 'none',
+						duration: 2000,
+					});
+				}
+			}
+
+
+
 		},
 	};
 </script>
@@ -232,6 +312,32 @@
 		padding: 60px;
 		border-radius: 10px;
 	}
+
+	.picker-actions {
+		display: flex;
+		justify-content: space-between;
+		/* 两端对齐 */
+		margin-top: 20px;
+	}
+
+	.close-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+	.replenish-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
 
 	.load-more-btn {
 		padding: 10px;
