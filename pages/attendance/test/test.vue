@@ -50,10 +50,25 @@
 							</view>
 						</view>
 					</view>
+
 					<!-- 右侧申请补卡按钮 -->
-					<view class="apply-makeup-btn">
+					<!-- 										<view class="apply-makeup-btn">
 						<button @click="showPicker(record)">申请补卡</button>
+					</view> -->
+
+					<view class="apply-makeup-btn">
+						<view v-if="record.canReplenish">
+							<button @click="showPicker(record)">申请补卡</button>
+						</view>
+						<view v-else>
+							<button disabled>考勤失效</button>
+						</view>
 					</view>
+
+
+
+
+
 				</view>
 			</view>
 			<view v-else>
@@ -110,15 +125,63 @@
 		methods: {
 			// 显示弹窗
 			showPicker(record) {
-			  this.selectedRecord = record;  // 将当前记录保存到 selectedRecord
-			  this.selectedDateTime = record.checkoutTime || "";  // 如果已有签退时间，就传递它
-			  this.showPickerDialog = true;  // 显示弹窗
+				this.selectedRecord = record; // 将当前记录保存到 selectedRecord
+				this.selectedDateTime = record.checkoutTime || ""; // 如果已有签退时间，就传递它
+				this.showPickerDialog = true; // 显示弹窗
 			},
 
 			// 关闭弹窗
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
+
+
+
+			// 判断是否可以申请补卡
+			// canReplenish(checkInTime) {
+			// 	console.log("根据签到时间判断是否可以补卡", checkInTime);
+
+			// 	// 替换日期格式中的空格为 'T'，以确保兼容 iOS
+			// 	const formattedCheckInTime = checkInTime.replace(" ", "T");
+
+			// 	// 获取今天的日期（年月日）
+			// 	const today = new Date();
+			// 	const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // 去掉时分秒
+
+			// 	// 转换签到日期为 Date 对象，去掉时分秒部分
+			// 	const checkInDate = new Date(formattedCheckInTime);
+			// 	const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+
+			// 	// 计算日期差异（天数）
+			// 	const timeDiff = todayDate - checkInDateOnly; // 时间差（毫秒）
+			// 	const dayDiff = timeDiff / (1000 * 3600 * 24); // 转换为天数
+
+			// 	// 如果日期差小于等于7天，返回 true
+			// 	console.log("dayDiff <= 7", dayDiff <= 7)
+			// 	return dayDiff <= 7;
+			// },
+
+			canReplenish(checkInTime) {
+				const formattedCheckInTime = checkInTime.replace(" ", "T");
+				const today = new Date();
+				const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+				const checkInDate = new Date(formattedCheckInTime);
+				const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+				const dayDiff = (todayDate - checkInDateOnly) / (1000 * 3600 * 24);
+				return dayDiff <= 7;
+			},
+
+			updateReplenishStatus() {
+				this.attendanceRecords = this.attendanceRecords.map(record => ({
+					...record,
+					canReplenish: this.canReplenish(record.checkInTime),
+				}));
+			},
+
+
+
+
+
 
 			//时间选择器开始时间
 			getStartTime(checkInTime) {
@@ -133,15 +196,16 @@
 
 			// 更新日期时间
 			updateSelectedDateTime(checkInTime) {
-			  if (this.selectedTime) {
-			    this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
-			    this.selectedRecord.checkoutTime = this.selectedDateTime;  // 更新当前记录的签退时间
-			  } else {
-			    this.selectedDateTime = "";
-			  }
+				if (this.selectedTime) {
+					this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
+					this.selectedRecord.checkoutTime = this.selectedDateTime; // 更新当前记录的签退时间
+				} else {
+					this.selectedDateTime = "";
+				}
 			},
 			// 加载考勤记录
 			async loadAllRecords() {
+
 				if (this.noMoreData || this.isLoading) return; // 防止重复加载
 
 				this.isLoading = true; // 开始加载
@@ -160,9 +224,9 @@
 							...this.attendanceRecords,
 							...newRecords.map(record => ({
 								...record,
-								checkoutTime: ''  // 每个记录添加一个空的 checkoutTime
+								checkoutTime: '' // 每个记录添加一个空的 checkoutTime
 							}))
-						];						
+						];
 						// this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
 
 						// 判断是否还有更多数据
@@ -177,6 +241,7 @@
 				} finally {
 					this.isLoading = false; // 加载结束
 				}
+				await this.updateReplenishStatus();
 			},
 
 			// 加载更多记录
@@ -352,3 +417,5 @@
 		cursor: not-allowed;
 	}
 </style>
+
+

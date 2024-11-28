@@ -50,10 +50,25 @@
 							</view>
 						</view>
 					</view>
+
 					<!-- 右侧申请补卡按钮 -->
-					<view class="apply-makeup-btn">
+					<!-- 										<view class="apply-makeup-btn">
 						<button @click="showPicker(record)">申请补卡</button>
+					</view> -->
+
+					<view class="apply-makeup-btn">
+						<view v-if="record.canReplenish">
+							<button @click="showPicker(record)">申请补卡</button>
+						</view>
+						<view v-else>
+							<button disabled>考勤失效</button>
+						</view>
 					</view>
+
+
+
+
+
 				</view>
 			</view>
 			<view v-else>
@@ -119,6 +134,28 @@
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
+			// 判断补签记录是否在七天之内
+			canReplenish(checkInTime) {
+				const formattedCheckInTime = checkInTime.replace(" ", "T");
+				const today = new Date();
+				const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+				const checkInDate = new Date(formattedCheckInTime);
+				const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+				const dayDiff = (todayDate - checkInDateOnly) / (1000 * 3600 * 24);
+				return dayDiff <= 7;
+			},
+
+			updateReplenishStatus() {
+				this.attendanceRecords = this.attendanceRecords.map(record => ({
+					...record,
+					canReplenish: this.canReplenish(record.checkInTime),
+				}));
+			},
+
+
+
+
+
 
 			//时间选择器开始时间
 			getStartTime(checkInTime) {
@@ -142,6 +179,7 @@
 			},
 			// 加载考勤记录
 			async loadAllRecords() {
+
 				if (this.noMoreData || this.isLoading) return; // 防止重复加载
 
 				this.isLoading = true; // 开始加载
@@ -177,6 +215,7 @@
 				} finally {
 					this.isLoading = false; // 加载结束
 				}
+				await this.updateReplenishStatus();
 			},
 
 			// 加载更多记录
@@ -352,3 +391,5 @@
 		cursor: not-allowed;
 	}
 </style>
+
+
