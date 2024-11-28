@@ -29,12 +29,15 @@
 				<text>暂无出勤记录~</text>
 			</view>
 		</scroll-view>
-
-		<!-- 底部加载更多按钮 -->
+		
+		<!-- 第三部分底部加载更多按钮 -->
 		<view v-if="currentPage < totalPages" class="load-more-section">
 			<button @click="loadMoreRecords" :disabled="isLoading">
 				{{ isLoading ? '加载中...' : '加载更多' }}
 			</button>
+		</view>
+		<view class="loading" v-else>
+		  <text>没有更多记录了~</text>
 		</view>
 	</view>
 </template>
@@ -163,4 +166,5 @@ export default {
 	color: #666;
 	padding: 10px;
 }
+
 </style>

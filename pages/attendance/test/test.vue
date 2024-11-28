@@ -14,7 +14,7 @@
 							<text>签到时间：{{ record.checkInTime }}</text>
 						</view>
 						<view>
-							<text>签退时间：{{ "未签退"  }}</text>
+							<text>签退时间：{{ "未签退" }}</text>
 						</view>
 						<!-- 弹出选择日期和时间的区域 -->
 						<view v-if="showPickerDialog" class="picker-dialog">
@@ -27,9 +27,7 @@
 										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
 									</view>
 								</view>
-
 								<view>
-
 									<!-- 时间选择器 -->
 									<picker mode="time" @change="(e) => onTimeChange(e, record.checkInTime)">
 										<button type="default">选择时间</button>
@@ -37,29 +35,31 @@
 									<!-- 关闭弹窗按钮 -->
 									<button type="default" @click="closePickerDialog">关闭</button>
 								</view>
-
-
 							</view>
 						</view>
 					</view>
-
 					<!-- 右侧申请补卡按钮 -->
 					<view class="apply-makeup-btn">
-						<button @click="showPicker">
-							申请补卡
-						</button>
+						<button @click="showPicker">申请补卡</button>
 					</view>
 				</view>
-
 			</view>
 			<view v-else>
 				<text>&nbsp;&nbsp;&nbsp;暂无需要补卡的记录~</text>
 			</view>
 		</scroll-view>
+
+		<!-- 加载更多按钮 -->
+		<view class="load-more-section" v-if="!noMoreData">
+			<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
+				{{ isLoading ? "加载中..." : "加载更多" }}
+			</button>
+		</view>
+		<view class="loading" v-else>
+			<text>没有更多记录了~</text>
+		</view>
 	</view>
-
 </template>
-
 
 <script>
 	import http from "@/utils/http.ts"; // 导入封装好的 http 请求工具
@@ -67,50 +67,47 @@
 	export default {
 		data() {
 			return {
-				currentClub: {}, // 存储当前社团信息
-				userInfo: {}, // 存储用户信息
-				attendanceRecords: [], // 存储考勤记录
-				selectedDate: "", // 选择的日期
-				selectedTime: "", // 选择的时间（时分秒）
-				selectedDateTime: "", // 完整的日期时间
-				showPickerDialog: false, // 控制弹窗显示
-				checkOutTime: "",
+				currentClub: {}, // 当前社团信息
+				userInfo: {}, // 用户信息
+				attendanceRecords: [], // 考勤记录
+				selectedDate: "", // 日期
+				selectedTime: "", // 时间
+				selectedDateTime: "", // 完整日期时间
+				showPickerDialog: false, // 弹窗显示控制
+				currentPage: 1, // 当前页码
+				pageSize: 8, // 每页显示数量
+				noMoreData: false, // 是否还有更多数据
+				isLoading: false, // 是否正在加载
 			};
 		},
 
 		onLoad() {
-			// 获取全局数据
+			// 获取全局数据并初始化
 			const app = getApp();
-			const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
+			const clubInfo = app.globalData.userData?.clubInfo || [];
 			const userInfo = app.globalData.userData?.userInfo || {};
-			this.userInfo = userInfo; // 将用户信息存储到 data 中
-			// 获取当前选中的社团索引，确保全局数据的正确访问
+			this.userInfo = userInfo;
 			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
-			const selectedClub = clubInfo[currentClubIndex] || {};
-			this.currentClub = selectedClub; // 将当前社团信息存储到 data 中
-			// 先加载一条数据以获取总记录数，然后加载所有数据
+			this.currentClub = clubInfo[currentClubIndex] || {};
 			this.loadAllRecords();
 		},
 
-
 		methods: {
-			// 显示选择日期和时间的弹窗
+			// 显示弹窗
 			showPicker() {
 				this.showPickerDialog = true;
 			},
-			// 关闭选择日期和时间的弹窗
+			// 关闭弹窗
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
-
-			// 时间改变事件
+			// 时间选择事件
 			onTimeChange(e, checkInTime) {
 				const time = e.detail.value;
 				this.selectedTime = `${time}:00`;
 				this.updateSelectedDateTime(checkInTime);
 			},
-
-			// 更新完整的日期时间显示
+			// 更新日期时间
 			updateSelectedDateTime(checkInTime) {
 				if (this.selectedTime) {
 					this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
@@ -118,31 +115,41 @@
 					this.selectedDateTime = "";
 				}
 			},
-
-
-
-			// 加载所有数据
+			// 加载考勤记录
 			async loadAllRecords() {
+				if (this.noMoreData || this.isLoading) return; // 防止重复加载
 
-
+				this.isLoading = true; // 开始加载
 				try {
-					const response = await http.get("/attendance/getUnCheckOutRecord", {
+					const response = await http.get("/attendance/getUnCheckOutRecordT", {
 						clubId: this.currentClub.clubId,
 						userId: this.userInfo.userId,
-
+						currentPage: this.currentPage,
+						pageSize: this.pageSize,
 					});
+
 					if (response.status_code === 200) {
-						this.attendanceRecords = response.data;
-						console.log('this.attendanceRecords', this.attendanceRecords);
+						const newRecords = response.data.records;
+						this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
+
+						// 判断是否还有更多数据
+						if (newRecords.length < this.pageSize) {
+							this.noMoreData = true; // 没有更多数据
+						} else {
+							this.currentPage += 1; // 增加页码
+						}
 					}
 				} catch (error) {
-					console.error("获取全量出勤记录时出错：", error);
+					console.error("加载考勤记录失败：", error);
+				} finally {
+					this.isLoading = false; // 加载结束
 				}
 			},
-
-
-
-		}
+			// 加载更多记录
+			loadMoreRecords() {
+				this.loadAllRecords();
+			},
+		},
 	};
 </script>
 
@@ -183,11 +190,8 @@
 
 	.apply-makeup-btn button {
 		padding: 3px 5px;
-		background-color: #F5F5F5;
-		/* 白色背景 */
-		/* 天蓝色背景 */
+		background-color: #f5f5f5;
 		color: red;
-		/* 红色字体 */
 		border: none;
 		border-radius: 20px;
 		cursor: pointer;
@@ -195,12 +199,9 @@
 
 	.apply-makeup-btn button:disabled {
 		background-color: #ccc;
-		/* 灰色背景 */
 		color: red;
-		/* 红色字体 */
 		cursor: not-allowed;
 	}
-
 
 	.load-more-section {
 		padding: 10px;
@@ -230,5 +231,18 @@
 		background-color: white;
 		padding: 60px;
 		border-radius: 10px;
+	}
+
+	.load-more-btn {
+		padding: 10px;
+		background-color: #f7f7f7;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+
+	.load-more-btn:disabled {
+		background-color: #ccc;
+		cursor: not-allowed;
 	}
 </style>
