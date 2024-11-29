@@ -87,9 +87,9 @@
 			    this.isClockingIn = false;
 			};
 
-			// 发起请求并获取数据
+			// // 发起请求获取本周考勤时长数据
 			this.fetchAttendanceDuration();
-			//获取本周开始和结束时间
+			//获取本周开始和结束时间，并且发请求时长
 			this.getWeekStartEnd();
 			// 获取签到记录
 			this.fetchLatestCheckInRecord();
@@ -125,18 +125,14 @@
 				sunday.setDate(now.getDate() - dayOfWeek + 7); // 将当前日期设置为本周日
 
 				// 设置时间格式为 "yyyy-mm-dd 00:00:00" 和 "yyyy-mm-dd 23:59:59"
-				this.weekStart = this.formatDate(monday, "00:00:00");
-				this.weekEnd = this.formatDate(sunday, "23:59:59");
-				console.log("本周一时间",this.weekStart);
-				console.log("本周日时间",this.weekEnd);
+				this.weekStart = this.formatDate(monday, '00:00:00');
+				this.weekEnd = this.formatDate(sunday, '23:59:59');
+				// 保存到本地存储
+				wx.setStorageSync('weekStart', this.weekStart);
+				wx.setStorageSync('weekEnd', this.weekEnd);
+
 			},
 
-			formatDate(date, time) {
-				const year = date.getFullYear();
-				const month = String(date.getMonth() + 1).padStart(2, '0');
-				const day = String(date.getDate()).padStart(2, '0');
-				return `${year}-${month}-${day} ${time}`;
-			},
 
 			//获取用户当天最新打卡记录
 			async fetchLatestCheckInRecord() {
@@ -166,22 +162,29 @@
 					console.error("请求错误:", error);
 					this.checkInStatus = "获取签到记录失败";
 				}
-				console.log("当天最新签到状态", this.checkInStatus);
-				console.log("当天最新签退状态", this.checkOutStatus);
+				// console.log("当天最新签到状态", this.checkInStatus);
+				// console.log("当天最新签退状态", this.checkOutStatus);
 			},
 
 
 
 			// 发起请求获取本周考勤时长
 			async fetchAttendanceDuration() {
+				// 从本地存储读取时间
+				this.weekStart = wx.getStorageSync('weekStart') ;
+				this.weekEnd = wx.getStorageSync('weekEnd') ;
+			
+				console.log("发请求的本周一时间", this.weekStart);
+				console.log("发请求的本周日时间", this.weekEnd);
+
 				try {
 
 					const response = await http.post("/attendance/durationTime", {
 						clubId: this.currentClub.clubId, // 直接使用 this.currentClub.clubId
-						userName: "", // 用户名可为空
+						userName: " ", // 用户名可为空
 						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
 						startTime: this.weekStart, // 可以根据需求调整时间范围
-						endTime: this.weekEnd
+						endTime: this.weekEnd,
 					});
 
 					// 检查请求是否成功
@@ -196,6 +199,7 @@
 					console.error("请求错误:", error);
 				}
 			},
+			
 
 			// 发起签到请求
 			async checkInRequest() {
@@ -253,7 +257,7 @@
 				const hours = Math.floor(seconds / 3600);
 				const minutes = Math.floor((seconds % 3600) / 60);
 				const remainingSeconds = seconds % 60;
-				return `${hours}小时${minutes}分钟${remainingSeconds}秒`;
+				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
 
 			},
 
@@ -294,7 +298,6 @@
 			},
 			
 
-
 			//获取签到时间前一秒
 			getCurrentTime() {
 				let now = new Date();
@@ -305,7 +308,6 @@
 
 
 			// 将时间格式化为 yyyy-mm-dd hh:mm:ss
-
 			requestFormatDate(date) {
 				const year = date.getFullYear();
 				const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
@@ -314,6 +316,13 @@
 				const minutes = String(date.getMinutes()).padStart(2, '0');
 				const seconds = String(date.getSeconds()).padStart(2, '0');
 				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+			},
+			
+			formatDate(date, time) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				return `${year}-${month}-${day} ${time}`;
 			},
 
 
@@ -330,7 +339,6 @@
 		
 	};
 </script>
-
 
 <style scoped>
 	@import url(./checkIn.css);

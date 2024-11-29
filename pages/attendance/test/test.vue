@@ -1,91 +1,32 @@
 <template>
 	<view class="container">
-		<!-- 顶部提示词 -->
-		<view class="header-tips">
-			<text>补卡</text>
+		<!-- 第一部分：时间计时 -->
+		<view class="section timer-section">
+			<p>{{ formattedTime }}</p>
+			<!-- 显示当前选中的社团名称 -->
+			<p v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
 		</view>
 
-		<!-- 第二部分：展示考勤记录 -->
-		<scroll-view class="attendance-list" scroll-y :scroll-with-animation="true" @scrolltolower="loadMoreRecords">
-			<view v-if="attendanceRecords.length > 0">
-				<view v-for="(record, index) in attendanceRecords" :key="index" class="record-item">
-					<view class="record-info">
-						<view>
-							<text>签到时间：{{ record.checkInTime }}</text>
-						</view>
-						<view>
-							<text>签退时间：{{ "未签退" }}</text>
-						</view>
-						<!-- 弹出选择日期和时间的区域 -->
-						<view v-if="showPickerDialog" class="picker-dialog">
-							<view class="picker-container">
-								<!-- 顶部信息 -->
-								<view>
-									<view>
-										<text>签到时间：{{ selectedRecord.checkInTime }}</text>
-									</view>
-									<view>
-										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
-									</view>
-
-								</view>
-
-
-								<!-- 时间选择器 -->
-								<view class="time-selector">
-									<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
-										@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
-										<button type="default">选择签退时间</button>
-									</picker>
-								</view>
-
-								<!-- 底部按钮区域 -->
-								<view class="picker-actions">
-									<!-- 关闭按钮 -->
-									<button class="close-btn" @click="closePickerDialog()">关闭</button>
-									<!-- 申请补卡按钮 -->
-									<button class="replenish-btn"
-										@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
-								</view>
-							</view>
-						</view>
-					</view>
-
-					<!-- 右侧申请补卡按钮 -->
-					<!-- 										<view class="apply-makeup-btn">
-						<button @click="showPicker(record)">申请补卡</button>
-					</view> -->
-
-					<view class="apply-makeup-btn">
-						<view v-if="record.canReplenish">
-							<button @click="showPicker(record)">申请补卡</button>
-						</view>
-						<view v-else>
-							<button disabled>考勤失效</button>
-						</view>
-					</view>
-
-
-
-
-
-				</view>
+		<!-- 第二部分：打卡记录 -->
+		<view class="section log-section">
+			<!-- 获取当天最新签到状态 -->
+			<p>{{ checkInStatus }}</p>
+			<p>{{ checkOutStatus }}</p>
+			<view v-if="attendanceDuration.userId">
+				<p>本周总计打卡时间: {{ formatDuration(attendanceDuration.attendanceDurationTime) }}</p>
 			</view>
 			<view v-else>
-				<text>&nbsp;&nbsp;&nbsp;暂无需要补卡的记录~</text>
+				<p>加载数据中...</p>
 			</view>
-		</scroll-view>
+		</view>
 
-		<!-- 加载更多按钮 -->
-		<view class="load-more-section" v-if="!noMoreData">
-			<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
-				{{ isLoading ? "加载中..." : "加载更多" }}
+		<!-- 第三部分：单一按钮 -->
+		<view class="button-section">
+			<button @click="toggleClocking" class="clocking-button">
+				{{ isClockingIn ? '结束打卡' : '开始打卡' }}
 			</button>
 		</view>
 
-		<view class="loading" v-else>
-			<text>没有更多记录了~</text>
-		</view>
 	</view>
 </template>
 
@@ -95,327 +36,310 @@
 	export default {
 		data() {
 			return {
-				currentClub: {}, // 当前社团信息
-				userInfo: {}, // 用户信息
-				attendanceRecords: [], // 考勤记录
-				selectedDate: "", // 日期
-				selectedTime: "", // 时间
-				selectedDateTime: "", // 用户选择完整日期时间
-				showPickerDialog: false, // 弹窗显示控制
-				currentPage: 1, // 当前页码
-				pageSize: 8, // 每页显示数量
-				noMoreData: false, // 是否还有更多数据
-				isLoading: false, // 是否正在加载
-				checkOutTime: "",
-				selectedRecord: null, // 用来存储当前选中的考勤记录
+
+				currentClub: {}, // 存储当前社团信息
+				userInfo: {}, // 存储用户信息
+				attendanceDuration: {}, // 存储考勤时长数据
+				
+				weekStart: "", // 本周开始时间
+				weekEnd: "", // 本周结束时间
+				isClockingIn: false, // 是否正在打卡
+				timerInterval: null, // 用来存储计时器的 ID
+				elapsedTime: 0, // 计时的秒数
+
+				checkInStatus: "", // 用于存储签到状态
+				checkOutStatus: "", //签退状态
 			};
 		},
 
 		onLoad() {
-			// 获取全局数据并初始化
+			// 获取全局数据
 			const app = getApp();
-			const clubInfo = app.globalData.userData?.clubInfo || [];
+			const clubInfo = app.globalData.userData?.clubInfo || []; // 获取社团信息
 			const userInfo = app.globalData.userData?.userInfo || {};
-			this.userInfo = userInfo;
+			this.userInfo = userInfo; // 将用户信息存储到 data 中
+
+			// 获取当前选中的社团索引，确保全局数据的正确访问
 			const currentClubIndex = app.globalData.appData?.currentClubIndex ?? 0;
-			this.currentClub = clubInfo[currentClubIndex] || {};
-			this.loadAllRecords();
+
+			// 根据当前选择的社团下标获取当前社团信息
+			const selectedClub = clubInfo[currentClubIndex] || {};
+
+			// 将当前社团信息存储到 data 中
+			this.currentClub = selectedClub;
+
+			// 恢复打卡状态
+			
+
+			
+			// 恢复打卡状态
+			const savedClockingStatus = wx.getStorageSync('isClockingIn');
+			if (savedClockingStatus === 'true') {
+			    this.isClockingIn = true;
+			    const clockStartTime = wx.getStorageSync('clockStartTime');
+			    if (clockStartTime) {
+			        this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 恢复计时
+			        this.timerInterval = setInterval(() => {
+			            this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 继续计时
+			        }, 1000);
+			    }
+			} else {
+			    this.isClockingIn = false;
+			};
+
+			// // 发起请求获取本周考勤时长数据
+			this.fetchAttendanceDuration();
+			//获取本周开始和结束时间，并且发请求时长
+			this.getWeekStartEnd();
+			// 获取签到记录
+			this.fetchLatestCheckInRecord();
+		},
+
+		computed: {
+			formattedTime() {
+				const hours = String(Math.floor(this.elapsedTime / 3600)).padStart(2, '0');
+				const minutes = String(Math.floor((this.elapsedTime % 3600) / 60)).padStart(2, '0');
+				const seconds = String(this.elapsedTime % 60).padStart(2, '0');
+				return `${hours} : ${minutes} : ${seconds}`;
+			},
 		},
 
 		methods: {
-			// 显示弹窗
-			showPicker(record) {
-				this.selectedRecord = record; // 将当前记录保存到 selectedRecord
-				this.selectedDateTime = record.checkoutTime || ""; // 如果已有签退时间，就传递它
-				this.showPickerDialog = true; // 显示弹窗
-			},
 
-			// 关闭弹窗
-			closePickerDialog() {
-				this.showPickerDialog = false;
-			},
+			//获取本周一和周日时间
+			getWeekStartEnd() {
+				const now = new Date();
+				// 如果一个变量是只读的或者是常量（用 const 声明），那么试图修改它会导致 TypeError。
 
-
-
-			// 判断是否可以申请补卡
-			// canReplenish(checkInTime) {
-			// 	console.log("根据签到时间判断是否可以补卡", checkInTime);
-
-			// 	// 替换日期格式中的空格为 'T'，以确保兼容 iOS
-			// 	const formattedCheckInTime = checkInTime.replace(" ", "T");
-
-			// 	// 获取今天的日期（年月日）
-			// 	const today = new Date();
-			// 	const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // 去掉时分秒
-
-			// 	// 转换签到日期为 Date 对象，去掉时分秒部分
-			// 	const checkInDate = new Date(formattedCheckInTime);
-			// 	const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
-
-			// 	// 计算日期差异（天数）
-			// 	const timeDiff = todayDate - checkInDateOnly; // 时间差（毫秒）
-			// 	const dayDiff = timeDiff / (1000 * 3600 * 24); // 转换为天数
-
-			// 	// 如果日期差小于等于7天，返回 true
-			// 	console.log("dayDiff <= 7", dayDiff <= 7)
-			// 	return dayDiff <= 7;
-			// },
-
-			canReplenish(checkInTime) {
-				const formattedCheckInTime = checkInTime.replace(" ", "T");
-				const today = new Date();
-				const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-				const checkInDate = new Date(formattedCheckInTime);
-				const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
-				const dayDiff = (todayDate - checkInDateOnly) / (1000 * 3600 * 24);
-				return dayDiff <= 7;
-			},
-
-			updateReplenishStatus() {
-				this.attendanceRecords = this.attendanceRecords.map(record => ({
-					...record,
-					canReplenish: this.canReplenish(record.checkInTime),
-				}));
-			},
-
-
-
-
-
-
-			//时间选择器开始时间
-			getStartTime(checkInTime) {
-				return checkInTime.split(" ")[1].substring(0, 5);
-			},
-			// 时间改变事件
-			onTimeChange(e, checkInTime) {
-				const time = e.detail.value;
-				this.selectedTime = `${time}:59`;
-				this.updateSelectedDateTime(checkInTime);
-			},
-
-			// 更新日期时间
-			updateSelectedDateTime(checkInTime) {
-				if (this.selectedTime) {
-					this.selectedDateTime = `${checkInTime.split(" ")[0]} ${this.selectedTime}`;
-					this.selectedRecord.checkoutTime = this.selectedDateTime; // 更新当前记录的签退时间
-				} else {
-					this.selectedDateTime = "";
+				console.log("当前时间", now);
+				let dayOfWeek = now.getDay(); // 获取当前星期几 (0-6，0代表星期日，1代表星期一...)
+				// 计算本周一的日期
+				// 将星期日视为本周的最后一天
+				if (dayOfWeek === 0) {
+					dayOfWeek = 7; // 把星期日视为第7天
 				}
+				const monday = new Date(now);
+				monday.setDate(now.getDate() - dayOfWeek + 1); // 将当前日期设置为本周一
+				// 计算本周日的日期
+				const sunday = new Date(now);
+				sunday.setDate(now.getDate() - dayOfWeek + 7); // 将当前日期设置为本周日
+
+				// 设置时间格式为 "yyyy-mm-dd 00:00:00" 和 "yyyy-mm-dd 23:59:59"
+				this.weekStart = this.formatDate(monday, '00:00:00');
+				this.weekEnd = this.formatDate(sunday, '23:59:59');
+				// 保存到本地存储
+				wx.setStorageSync('weekStart', this.weekStart);
+				wx.setStorageSync('weekEnd', this.weekEnd);
+
 			},
-			// 加载考勤记录
-			async loadAllRecords() {
 
-				if (this.noMoreData || this.isLoading) return; // 防止重复加载
 
-				this.isLoading = true; // 开始加载
+			//获取用户当天最新打卡记录
+			async fetchLatestCheckInRecord() {
 				try {
-					const response = await http.get("/attendance/getUnCheckOutRecordT", {
-						clubId: this.currentClub.clubId,
+					const response = await http.get("/attendance/getLatestCheckInRecord", {
+
 						userId: this.userInfo.userId,
-						currentPage: this.currentPage,
-						pageSize: this.pageSize,
+						clubId: this.currentClub.clubId
 					});
 
+					// 如果请求成功并且返回数据
 					if (response.status_code === 200) {
-						const newRecords = response.data.records;
-						// 给每个记录添加 checkoutTime 字段
-						this.attendanceRecords = [
-							...this.attendanceRecords,
-							...newRecords.map(record => ({
-								...record,
-								checkoutTime: '' // 每个记录添加一个空的 checkoutTime
-							}))
-						];
-						// this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
-
-						// 判断是否还有更多数据
-						if (newRecords.length < this.pageSize) {
-							this.noMoreData = true; // 没有更多数据
+						// 如果已经签到，展示签到时间
+						const checkInTime = response.data.checkInTime; // 获取签到时间
+						const checkoutTime = response.data.checkoutTime;
+						this.checkInStatus = `${checkInTime}开始打卡`;
+						if (checkoutTime === null) {
+							this.checkOutStatus = "暂无离开时间";
 						} else {
-							this.currentPage += 1; // 增加页码
+							this.checkOutStatus = `${checkoutTime}结束打卡`;
 						}
-					}
-				} catch (error) {
-					console.error("加载考勤记录失败：", error);
-				} finally {
-					this.isLoading = false; // 加载结束
-				}
-				await this.updateReplenishStatus();
-			},
-
-			// 加载更多记录
-			loadMoreRecords() {
-				this.loadAllRecords();
-			},
-
-			// 补签请求
-			async replenish(checkInTime, selectedDateTime) {
-				console.log("补签签到时间", checkInTime);
-				console.log("补签签退时间", selectedDateTime);
-				try {
-					const response = await http.post("/attendance/replenish", {
-						clubId: this.currentClub.clubId,
-						userId: this.userInfo.userId,
-						checkInTime: checkInTime,
-						checkoutTime: selectedDateTime,
-					});
-
-					if (response.status_code === 200) {
-						// 关闭弹窗
-						this.closePickerDialog();
-						this.loadAllRecords();
-						// 更新考勤记录
-						this.attendanceRecords = response.data;
-						console.log('this.attendanceRecords', this.attendanceRecords);
-						// 显示补签成功提示
-						uni.showToast({
-							title: '补签成功',
-							icon: 'success',
-							duration: 2000,
-						});
 					} else {
-						// 提示输入时间
-						uni.showToast({
-							title: '请输入有效的时间',
-							icon: 'none',
-							duration: 2000,
-						});
+						this.checkInStatus = "尚未开始打卡"; // 如果没有签到记录
+						this.checkOutStatus = "暂无离开时间";
 					}
 				} catch (error) {
-					console.error("补签请求时出错：", error);
-					uni.showToast({
-						title: '请求失败，请稍后再试',
-						icon: 'none',
-						duration: 2000,
-					});
+					console.error("请求错误:", error);
+					this.checkInStatus = "获取签到记录失败";
 				}
-			}
+				// console.log("当天最新签到状态", this.checkInStatus);
+				// console.log("当天最新签退状态", this.checkOutStatus);
+			},
 
+
+
+			// 发起请求获取本周考勤时长
+			async fetchAttendanceDuration() {
+				// 从本地存储读取时间
+				this.weekStart = wx.getStorageSync('weekStart') ;
+				this.weekEnd = wx.getStorageSync('weekEnd') ;
+			
+				console.log("发请求的本周一时间", this.weekStart);
+				console.log("发请求的本周日时间", this.weekEnd);
+
+				try {
+
+					const response = await http.post("/attendance/durationTime", {
+						clubId: this.currentClub.clubId, // 直接使用 this.currentClub.clubId
+						userName: " ", // 用户名可为空
+						userId: this.userInfo.userId, // 直接使用 this.userInfo.userId
+						startTime: this.weekStart, // 可以根据需求调整时间范围
+						endTime: this.weekEnd,
+					});
+
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						this.attendanceDuration = response.data[0];
+						console.log("用户一周打卡时长", this.attendanceDuration.attendanceDurationTime);
+
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+			
+
+			// 发起签到请求
+			async checkInRequest() {
+				try {
+					// 发起 HTTP POST 请求
+					const response = await http.post("/attendance/checkIn", {
+						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
+						userId: this.userInfo.userId, // 使用 this.userInfo.userId
+						checkInTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
+					});
+					console.log("签到时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)))
+
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						// 假设返回的数据格式中 data 是一个对象
+						this.attendanceData = response.data;
+						// console.log("签到成功:", this.attendanceData);
+						this.checkInStatus =
+							`${this.requestFormatDate(new Date(( new Date()).getTime() - 1000) ) }开始打卡`;
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+
+			// 发起签退请求
+			async checkOutRequest() {
+				try {
+					// 发起 HTTP POST 请求
+					const response = await http.patch("/attendance/checkout", {
+						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
+						userId: this.userInfo.userId, // 使用 this.userInfo.userId
+						checkoutTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
+					});
+					console.log("签退时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)));
+
+					// 检查请求是否成功
+					if (response.status_code === 200 && response.data) {
+						// 假设返回的数据格式中 data 是一个对象
+						this.attendanceData = response.data;
+						// console.log("签退成功:", this.attendanceData);
+						this.checkOutStatus = `${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
+					} else {
+						console.error("请求失败:", response.status_text);
+					}
+				} catch (error) {
+					console.error("请求错误:", error);
+				}
+			},
+
+			// 将秒数转换为时:分:秒格式
+			formatDuration(seconds) {
+				const hours = Math.floor(seconds / 3600);
+				const minutes = Math.floor((seconds % 3600) / 60);
+				const remainingSeconds = seconds % 60;
+				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+
+			},
+
+
+			// 切换打卡状态
+
+			toggleClocking() {
+			    if (this.isClockingIn) {
+			        this.endClockingIn();
+			        wx.setStorageSync('isClockingIn', 'false');
+			    } else {
+			        this.startClockingIn();
+			        wx.setStorageSync('isClockingIn', 'true');
+			    }
+			},
+
+
+			// 开始打卡
+			startClockingIn() {
+				this.checkInRequest();
+				this.isClockingIn = true;
+				const startTime = Date.now(); // 获取当前时间戳
+				wx.setStorageSync('clockStartTime', startTime); // 将时间戳保存到本地
+				//this.elapsedTime = 0; // 重置计时
+				this.timerInterval = setInterval(() => {
+					this.elapsedTime++; // 每秒增加1秒
+				}, 1000);
+			},
+			
+			// 结束打卡
+			endClockingIn() {
+				this.checkOutRequest();
+				this.fetchAttendanceDuration();
+			    this.isClockingIn = false;
+			    clearInterval(this.timerInterval); // 停止计时
+			    this.elapsedTime = 0; // 重置计时
+			    wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
+			},
+			
+
+			//获取签到时间前一秒
+			getCurrentTime() {
+				let now = new Date();
+				let oneSecondAgo = new Date(now.getTime() - 1000); // 减去 1000 毫秒，即 1 秒
+				return oneSecondAgo;
+
+			},
+
+
+			// 将时间格式化为 yyyy-mm-dd hh:mm:ss
+			requestFormatDate(date) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
+				const day = String(date.getDate()).padStart(2, '0');
+				const hours = String(date.getHours()).padStart(2, '0');
+				const minutes = String(date.getMinutes()).padStart(2, '0');
+				const seconds = String(date.getSeconds()).padStart(2, '0');
+				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+			},
+			
+			formatDate(date, time) {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				return `${year}-${month}-${day} ${time}`;
+			},
 
 
 		},
+
+		beforeDestroy() {
+
+			// 清理计时器，避免内存泄漏
+			if (this.timerInterval) {
+				clearInterval(this.timerInterval);
+			}
+		},
+		
+		
 	};
 </script>
 
 <style scoped>
-	.container {
-		display: flex;
-		flex-direction: column;
-		height: 100vh;
-	}
-
-	/* 顶部提示词样式 */
-	.header-tips {
-		background-color: #d1ecf1;
-		color: #0c5460;
-		padding: 10px;
-		text-align: center;
-		border-radius: 4px;
-		margin-bottom: 10px;
-	}
-
-	.attendance-list {
-		flex: 1;
-		overflow-y: auto;
-		background-color: #fff;
-	}
-
-	.record-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 15px;
-		border-bottom: 1px solid #e0e0e0;
-	}
-
-	.record-info {
-		flex: 1;
-	}
-
-	.apply-makeup-btn button {
-		padding: 3px 5px;
-		background-color: #f5f5f5;
-		color: red;
-		border: none;
-		border-radius: 20px;
-		cursor: pointer;
-	}
-
-	.apply-makeup-btn button:disabled {
-		background-color: #ccc;
-		color: red;
-		cursor: not-allowed;
-	}
-
-	.load-more-section {
-		padding: 10px;
-		text-align: center;
-		background-color: #f7f7f7;
-	}
-
-	.loading {
-		text-align: center;
-		color: #666;
-		padding: 10px;
-	}
-
-	.picker-dialog {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.picker-container {
-		background-color: white;
-		padding: 60px;
-		border-radius: 10px;
-	}
-
-	.picker-actions {
-		display: flex;
-		justify-content: space-between;
-		/* 两端对齐 */
-		margin-top: 20px;
-	}
-
-	.close-btn {
-		background-color: #f5f5f5;
-		color: #333;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-
-	.replenish-btn {
-		background-color: #f5f5f5;
-		color: #333;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-
-
-	.load-more-btn {
-		padding: 10px;
-		background-color: #f7f7f7;
-		border: none;
-		border-radius: 10px;
-		cursor: pointer;
-	}
-
-	.load-more-btn:disabled {
-		background-color: #ccc;
-		cursor: not-allowed;
-	}
+	@import url(./test.css);
 </style>
-
-

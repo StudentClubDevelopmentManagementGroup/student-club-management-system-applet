@@ -18,7 +18,7 @@
 			</picker>
 		</view>
 		<view id="functionArea1">
-			<view class="item" @click="toTest()">
+			<view class="item" @click="developing()">
 				<image src="../../static/svgs/mySelf_补卡进程.svg"></image>
 				<text>补卡进程</text>
 			</view>
