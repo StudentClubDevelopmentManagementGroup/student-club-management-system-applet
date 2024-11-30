@@ -12,11 +12,11 @@
 			<!-- 获取当天最新签到状态 -->
 			<p>{{ checkInStatus }}</p>
 			<p>{{ checkOutStatus }}</p>
-			<view v-if="attendanceDuration.userId">
-				<p>本周总计打卡时间: {{ formatDuration(attendanceDuration.attendanceDurationTime) }}</p>
+			<view v-if="attendanceDuration">
+				<p>本周总计打卡时间: {{ formatDuration(attendanceDuration) }}</p>
 			</view>
 			<view v-else>
-				<p>加载数据中...</p>
+				<p>本周未出勤！</p>
 			</view>
 		</view>
 
@@ -39,8 +39,8 @@
 
 				currentClub: {}, // 存储当前社团信息
 				userInfo: {}, // 存储用户信息
-				attendanceDuration: {}, // 存储考勤时长数据
-				
+				attendanceDuration: "", // 存储考勤时长数据
+
 				weekStart: "", // 本周开始时间
 				weekEnd: "", // 本周结束时间
 				isClockingIn: false, // 是否正在打卡
@@ -69,22 +69,22 @@
 			this.currentClub = selectedClub;
 
 			// 恢复打卡状态
-			
 
-			
+
+
 			// 恢复打卡状态
 			const savedClockingStatus = wx.getStorageSync('isClockingIn');
 			if (savedClockingStatus === 'true') {
-			    this.isClockingIn = true;
-			    const clockStartTime = wx.getStorageSync('clockStartTime');
-			    if (clockStartTime) {
-			        this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 恢复计时
-			        this.timerInterval = setInterval(() => {
-			            this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 继续计时
-			        }, 1000);
-			    }
+				this.isClockingIn = true;
+				const clockStartTime = wx.getStorageSync('clockStartTime');
+				if (clockStartTime) {
+					this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 恢复计时
+					this.timerInterval = setInterval(() => {
+						this.elapsedTime = Math.floor((Date.now() - clockStartTime) / 1000); // 继续计时
+					}, 1000);
+				}
 			} else {
-			    this.isClockingIn = false;
+				this.isClockingIn = false;
 			};
 
 			// // 发起请求获取本周考勤时长数据
@@ -105,6 +105,38 @@
 		},
 
 		methods: {
+
+			// 初始化每日重置计时器
+			initDailyResetTimer() {
+				// 当前时间
+				const now = new Date();
+				// 今天的23:59:59时间戳
+				const resetTime = new Date(
+					now.getFullYear(),
+					now.getMonth(),
+					now.getDate(),
+					23, 59, 59, 999 // 设置到当天的 23:59:59.999
+				).getTime();
+
+				// 计算距离 23:59:59 的时间间隔（毫秒）
+				const timeUntilReset = resetTime - now.getTime();
+
+				// 设置定时器
+				setTimeout(() => {
+					this.resetElapsedTime(); // 到时间后重置计时
+				}, timeUntilReset);
+			},
+			
+			// 重置计时逻辑
+			resetElapsedTime() {
+				//console.log("时间已到 23:59:59，重置计时器");
+				clearInterval(this.timerInterval); // 停止计时
+				wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
+				this.elapsedTime = 0; // 重置计时
+				this.isClockingIn = false;  //打卡按钮标志 未打卡
+				wx.setStorageSync('isClockingIn', 'false');
+				
+			},
 
 			//获取本周一和周日时间
 			getWeekStartEnd() {
@@ -171,9 +203,9 @@
 			// 发起请求获取本周考勤时长
 			async fetchAttendanceDuration() {
 				// 从本地存储读取时间
-				this.weekStart = wx.getStorageSync('weekStart') ;
-				this.weekEnd = wx.getStorageSync('weekEnd') ;
-			
+				this.weekStart = wx.getStorageSync('weekStart');
+				this.weekEnd = wx.getStorageSync('weekEnd');
+
 				console.log("发请求的本周一时间", this.weekStart);
 				console.log("发请求的本周日时间", this.weekEnd);
 
@@ -189,8 +221,8 @@
 
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
-						this.attendanceDuration = response.data[0];
-						console.log("用户一周打卡时长", this.attendanceDuration.attendanceDurationTime);
+						this.attendanceDuration = response.data[0].attendanceDurationTime;
+						console.log("用户一周打卡时长", this.attendanceDuration);
 
 					} else {
 						console.error("请求失败:", response.status_text);
@@ -199,7 +231,7 @@
 					console.error("请求错误:", error);
 				}
 			},
-			
+
 
 			// 发起签到请求
 			async checkInRequest() {
@@ -216,9 +248,15 @@
 					if (response.status_code === 200 && response.data) {
 						// 假设返回的数据格式中 data 是一个对象
 						this.attendanceData = response.data;
+						uni.showToast({
+							title: '签到成功',
+							icon: 'success',
+							duration: 1000,
+						});
 						// console.log("签到成功:", this.attendanceData);
 						this.checkInStatus =
 							`${this.requestFormatDate(new Date(( new Date()).getTime() - 1000) ) }开始打卡`;
+						this.checkOutStatus = "暂无离开时间";
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -242,8 +280,14 @@
 					if (response.status_code === 200 && response.data) {
 						// 假设返回的数据格式中 data 是一个对象
 						this.attendanceData = response.data;
+						uni.showToast({
+							title: '签退成功',
+							icon: 'success',
+							duration: 1000,
+						});
 						// console.log("签退成功:", this.attendanceData);
-						this.checkOutStatus = `${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
+						this.checkOutStatus =
+							`${this.requestFormatDate(new Date( ( new Date()).getTime() - 1000 ) ) }结束打卡`;
 					} else {
 						console.error("请求失败:", response.status_text);
 					}
@@ -265,38 +309,46 @@
 			// 切换打卡状态
 
 			toggleClocking() {
-			    if (this.isClockingIn) {
-			        this.endClockingIn();
-			        wx.setStorageSync('isClockingIn', 'false');
-			    } else {
-			        this.startClockingIn();
-			        wx.setStorageSync('isClockingIn', 'true');
-			    }
+				if (this.isClockingIn) {
+					this.endClockingIn();
+					wx.setStorageSync('isClockingIn', 'false');
+				} else {
+					this.startClockingIn();
+					wx.setStorageSync('isClockingIn', 'true');
+				}
 			},
 
 
 			// 开始打卡
 			startClockingIn() {
+				this.initDailyResetTimer();
 				this.checkInRequest();
 				this.isClockingIn = true;
 				const startTime = Date.now(); // 获取当前时间戳
 				wx.setStorageSync('clockStartTime', startTime); // 将时间戳保存到本地
-				//this.elapsedTime = 0; // 重置计时
 				this.timerInterval = setInterval(() => {
 					this.elapsedTime++; // 每秒增加1秒
 				}, 1000);
 			},
-			
+
+
 			// 结束打卡
 			endClockingIn() {
 				this.checkOutRequest();
-				this.fetchAttendanceDuration();
-			    this.isClockingIn = false;
-			    clearInterval(this.timerInterval); // 停止计时
-			    this.elapsedTime = 0; // 重置计时
-			    wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
+
+				this.isClockingIn = false;
+				clearInterval(this.timerInterval); // 停止计时
+				this.elapsedTime = 0; // 重置计时
+				wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
+				// 设置半秒延迟执行 fetchAttendanceDuration
+				//fetchAttendanceDuration 依赖于 checkOutRequest 的结果，
+				//直接调用可能会导致数据未及时更新的问题，延迟调用可以避免这些问题。
+				setTimeout(() => {
+					this.fetchAttendanceDuration();
+				}, 500); // 500毫秒 = 0.5秒
 			},
-			
+
+
 
 			//获取签到时间前一秒
 			getCurrentTime() {
@@ -317,7 +369,7 @@
 				const seconds = String(date.getSeconds()).padStart(2, '0');
 				return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 			},
-			
+
 			formatDate(date, time) {
 				const year = date.getFullYear();
 				const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -335,8 +387,8 @@
 				clearInterval(this.timerInterval);
 			}
 		},
-		
-		
+
+
 	};
 </script>
 
