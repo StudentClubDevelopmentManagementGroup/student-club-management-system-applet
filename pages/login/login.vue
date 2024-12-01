@@ -189,6 +189,15 @@
 				},1000)
 			},
 			toastHttpRequestInfo(res){
+				if(res.status_text === '用户不存在或密码错误'){
+					uni.showToast({
+						title:'密码错误',
+						icon:"error",
+						duration:1500
+					})
+					return
+				}
+				
 				uni.showToast({
 					title:res.status_text,
 					icon:res.status_code === 200?"success":"error",
