@@ -81,27 +81,12 @@
 			}
 		},
 		{
-			"path" : "pages/attendance/test/test",
-			"style" :
-			{
-				"navigationBarTitleText" : ""
-			}
-		},
-		{
 			"path" : "pages/report-bug/ReportBug",
 			"style" :
 			{
 				"navigationBarTitleText" : ""
 			}
 		},
-		{
-			"path" : "pages/attendance/test2/test2",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-			}
-		}
-
 	],
 
 	"tabBar": {
