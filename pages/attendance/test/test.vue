@@ -256,9 +256,9 @@
 					});
 				}
 			}
-
 		},
 	};
+	
 </script>
 
 <style scoped>
