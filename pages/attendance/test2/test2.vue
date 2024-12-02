@@ -14,69 +14,62 @@
 							<text>签到时间：{{ record.checkInTime }}</text>
 						</view>
 						<view>
-							<text>签退时间：{{ record.checkoutTime || "未签退" }}</text>
+							<text>签退时间：{{ "未签退" }}</text>
+						</view>
+						<!-- 弹出选择日期和时间的区域 -->
+						<view v-if="showPickerDialog" class="picker-dialog">
+							<view class="picker-container">
+								<!-- 顶部信息 -->
+								<view>
+									<view>
+										<text>签到时间：{{ selectedRecord.checkInTime }}</text>
+									</view>
+									<view>
+										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
+									</view>
+
+								</view>
+
+
+								<!-- 时间选择器 -->
+								<view class="time-selector">
+									<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
+										@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
+										<button type="default">选择签退时间</button>
+									</picker>
+								</view>
+
+								<!-- 底部按钮区域 -->
+								<view class="picker-actions">
+									<!-- 关闭按钮 -->
+									<button class="close-btn" @click="closePickerDialog()">关闭</button>
+									<!-- 申请补卡按钮 -->
+									<button class="replenish-btn"
+										@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
+								</view>
+							</view>
 						</view>
 					</view>
-
-					<!-- item项右侧按钮 -->
+					<!-- 右侧申请补卡按钮 -->
 					<view class="apply-makeup-btn">
-						<view v-if="record.canReplenish">
-							<button @click="showPicker(record)">申请补卡</button>
-						</view>
-						<view v-else>
-							<button disabled>考勤失效</button>
-						</view>
+						<button @click="showPicker(record)">申请补卡</button>
 					</view>
 				</view>
 			</view>
-
 			<view v-else>
 				<text>&nbsp;&nbsp;&nbsp;暂无需要补卡的记录~</text>
 			</view>
 		</scroll-view>
 
-		<!-- 底部按钮提示 -->
-		<view>
-			<!-- 加载更多按钮 -->
-			<view class="load-more-section" v-if="!noMoreData">
-				<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
-					{{ isLoading ? "加载中..." : "加载更多" }}
-				</button>
-			</view>
-
-			<view class="load-more-section" v-else>
-				<text>没有更多记录了~</text>
-			</view>
+		<!-- 加载更多按钮 -->
+		<view class="load-more-section" v-if="!noMoreData">
+			<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
+				{{ isLoading ? "加载中..." : "加载更多" }}
+			</button>
 		</view>
 
-		<!-- 弹出选择日期和时间的区域 -->
-		<view v-if="showPickerDialog" class="picker-dialog">
-			<view class="picker-container">
-				<!-- 顶部信息 -->
-				<view>
-					<view>
-						<text>签到时间：{{ selectedRecord.checkInTime }}</text>
-					</view>
-					<view>
-						<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
-					</view>
-				</view>
-				<!-- 时间选择器 -->
-				<view class="time-selector">
-					<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
-						@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
-						<button type="default">选择签退时间</button>
-					</picker>
-				</view>
-				<!-- 底部按钮区域 -->
-				<view class="picker-actions">
-					<!-- 关闭按钮 -->
-					<button class="close-btn" @click="closePickerDialog()">关闭</button>
-					<!-- 确认申请补卡按钮 -->
-					<button class="replenish-btn"
-						@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
-				</view>
-			</view>
+		<view class="loading" v-else>
+			<text>没有更多记录了~</text>
 		</view>
 	</view>
 </template>
@@ -126,23 +119,6 @@
 			closePickerDialog() {
 				this.showPickerDialog = false;
 			},
-			// 判断补签记录是否在七天之内
-			canReplenish(checkInTime) {
-				const formattedCheckInTime = checkInTime.replace(" ", "T");
-				const today = new Date();
-				const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-				const checkInDate = new Date(formattedCheckInTime);
-				const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
-				const dayDiff = (todayDate - checkInDateOnly) / (1000 * 3600 * 24);
-				return dayDiff <= 7;
-			},
-
-			updateReplenishStatus() {
-				this.attendanceRecords = this.attendanceRecords.map(record => ({
-					...record,
-					canReplenish: this.canReplenish(record.checkInTime),
-				}));
-			},
 
 			//时间选择器开始时间
 			getStartTime(checkInTime) {
@@ -164,7 +140,6 @@
 					this.selectedDateTime = "";
 				}
 			},
-
 			// 加载考勤记录
 			async loadAllRecords() {
 				if (this.noMoreData || this.isLoading) return; // 防止重复加载
@@ -188,20 +163,20 @@
 								checkoutTime: '' // 每个记录添加一个空的 checkoutTime
 							}))
 						];
-						//console.log("加载后的考勤记录", this.attendanceRecords); // 确保数据更新
-						// 判断是否还有更多数据
-						this.currentPage += 1; // 增加页码
+						// this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
 
-					} else {
-						this.noMoreData = true; // 没有更多数据
+						// 判断是否还有更多数据
+						if (newRecords.length < this.pageSize) {
+							this.noMoreData = true; // 没有更多数据
+						} else {
+							this.currentPage += 1; // 增加页码
+						}
 					}
 				} catch (error) {
 					console.error("加载考勤记录失败：", error);
 				} finally {
 					this.isLoading = false; // 加载结束
 				}
-				// 更新补卡状态
-				await this.updateReplenishStatus();
 			},
 
 			// 加载更多记录
@@ -224,20 +199,15 @@
 					if (response.status_code === 200) {
 						// 关闭弹窗
 						this.closePickerDialog();
+						this.loadAllRecords();
+						// 更新考勤记录
+						this.attendanceRecords = response.data;
+						console.log('this.attendanceRecords', this.attendanceRecords);
 						// 显示补签成功提示
 						uni.showToast({
 							title: '补签成功',
 							icon: 'success',
 							duration: 2000,
-						});
-						// 请求更新考勤记录并更新页面
-						this.attendanceRecords = this.attendanceRecords.filter(
-							record => record.checkInTime !== checkInTime
-						);
-						await this.loadAllRecords(); // 重新加载考勤记录
-						this.$nextTick(() => {
-							// 确保页面渲染完成
-							console.log("页面渲染完成，数据已重新加载");
 						});
 					} else {
 						// 提示输入时间
@@ -256,11 +226,129 @@
 					});
 				}
 			}
+
+
+
 		},
 	};
-	
 </script>
 
 <style scoped>
-	@import url(./test.css);
+	.container {
+		display: flex;
+		flex-direction: column;
+		height: 100vh;
+	}
+
+	/* 顶部提示词样式 */
+	.header-tips {
+		background-color: #d1ecf1;
+		color: #0c5460;
+		padding: 10px;
+		text-align: center;
+		border-radius: 4px;
+		margin-bottom: 10px;
+	}
+
+	.attendance-list {
+		flex: 1;
+		overflow-y: auto;
+		background-color: #fff;
+	}
+
+	.record-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 15px;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.record-info {
+		flex: 1;
+	}
+
+	.apply-makeup-btn button {
+		padding: 3px 5px;
+		background-color: #f5f5f5;
+		color: red;
+		border: none;
+		border-radius: 20px;
+		cursor: pointer;
+	}
+
+	.apply-makeup-btn button:disabled {
+		background-color: #ccc;
+		color: red;
+		cursor: not-allowed;
+	}
+
+	.load-more-section {
+		padding: 10px;
+		text-align: center;
+		background-color: #f7f7f7;
+	}
+
+	.loading {
+		text-align: center;
+		color: #666;
+		padding: 10px;
+	}
+
+	.picker-dialog {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.picker-container {
+		background-color: white;
+		padding: 60px;
+		border-radius: 10px;
+	}
+
+	.picker-actions {
+		display: flex;
+		justify-content: space-between;
+		/* 两端对齐 */
+		margin-top: 20px;
+	}
+
+	.close-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+	.replenish-btn {
+		background-color: #f5f5f5;
+		color: #333;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+
+	.load-more-btn {
+		padding: 10px;
+		background-color: #f7f7f7;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+
+	.load-more-btn:disabled {
+		background-color: #ccc;
+		cursor: not-allowed;
+	}
 </style>

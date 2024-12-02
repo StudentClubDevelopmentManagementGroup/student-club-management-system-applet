@@ -14,48 +14,11 @@
 							<text>签到时间：{{ record.checkInTime }}</text>
 						</view>
 						<view>
-							<text>签退时间：{{ "未签退" }}</text>
-						</view>
-						<!-- 弹出选择日期和时间的区域 -->
-						<view v-if="showPickerDialog" class="picker-dialog">
-							<view class="picker-container">
-								<!-- 顶部信息 -->
-								<view>
-									<view>
-										<text>签到时间：{{ selectedRecord.checkInTime }}</text>
-									</view>
-									<view>
-										<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
-									</view>
-
-								</view>
-
-
-								<!-- 时间选择器 -->
-								<view class="time-selector">
-									<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
-										@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
-										<button type="default">选择签退时间</button>
-									</picker>
-								</view>
-
-								<!-- 底部按钮区域 -->
-								<view class="picker-actions">
-									<!-- 关闭按钮 -->
-									<button class="close-btn" @click="closePickerDialog()">关闭</button>
-									<!-- 申请补卡按钮 -->
-									<button class="replenish-btn"
-										@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
-								</view>
-							</view>
+							<text>签退时间：{{ record.checkoutTime || "未签退" }}</text>
 						</view>
 					</view>
 
-					<!-- 右侧申请补卡按钮 -->
-					<!-- 										<view class="apply-makeup-btn">
-						<button @click="showPicker(record)">申请补卡</button>
-					</view> -->
-
+					<!-- item项右侧按钮 -->
 					<view class="apply-makeup-btn">
 						<view v-if="record.canReplenish">
 							<button @click="showPicker(record)">申请补卡</button>
@@ -64,27 +27,56 @@
 							<button disabled>考勤失效</button>
 						</view>
 					</view>
-
-
-
-
-
 				</view>
 			</view>
+
 			<view v-else>
 				<text>&nbsp;&nbsp;&nbsp;暂无需要补卡的记录~</text>
 			</view>
 		</scroll-view>
 
-		<!-- 加载更多按钮 -->
-		<view class="load-more-section" v-if="!noMoreData">
-			<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
-				{{ isLoading ? "加载中..." : "加载更多" }}
-			</button>
+		<!-- 底部按钮提示 -->
+		<view>
+			<!-- 加载更多按钮 -->
+			<view class="load-more-section" v-if="!noMoreData">
+				<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
+					{{ isLoading ? "加载中..." : "加载更多" }}
+				</button>
+			</view>
+
+			<view class="load-more-section" v-else>
+				<text>没有更多记录了~</text>
+			</view>
 		</view>
 
-		<view class="loading" v-else>
-			<text>没有更多记录了~</text>
+		<!-- 弹出选择日期和时间的区域 -->
+		<view v-if="showPickerDialog" class="picker-dialog">
+			<view class="picker-container">
+				<!-- 顶部信息 -->
+				<view>
+					<view>
+						<text>签到时间：{{ selectedRecord.checkInTime }}</text>
+					</view>
+					<view>
+						<text>签退时间：{{ selectedDateTime || "未签退" }}</text>
+					</view>
+				</view>
+				<!-- 时间选择器 -->
+				<view class="time-selector">
+					<picker mode="time" :start="getStartTime(selectedRecord.checkInTime)"
+						@change="(e) => onTimeChange(e, selectedRecord.checkInTime)">
+						<button type="default">选择签退时间</button>
+					</picker>
+				</view>
+				<!-- 底部按钮区域 -->
+				<view class="picker-actions">
+					<!-- 关闭按钮 -->
+					<button class="close-btn" @click="closePickerDialog()">关闭</button>
+					<!-- 确认申请补卡按钮 -->
+					<button class="replenish-btn"
+						@click="replenish(selectedRecord.checkInTime, selectedDateTime)">确认申请补卡</button>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -172,9 +164,9 @@
 					this.selectedDateTime = "";
 				}
 			},
+
 			// 加载考勤记录
 			async loadAllRecords() {
-
 				if (this.noMoreData || this.isLoading) return; // 防止重复加载
 
 				this.isLoading = true; // 开始加载
@@ -196,20 +188,19 @@
 								checkoutTime: '' // 每个记录添加一个空的 checkoutTime
 							}))
 						];
-						// this.attendanceRecords = [...this.attendanceRecords, ...newRecords];
-
+						//console.log("加载后的考勤记录", this.attendanceRecords); // 确保数据更新
 						// 判断是否还有更多数据
-						if (newRecords.length < this.pageSize) {
-							this.noMoreData = true; // 没有更多数据
-						} else {
-							this.currentPage += 1; // 增加页码
-						}
+						this.currentPage += 1; // 增加页码
+
+					} else {
+						this.noMoreData = true; // 没有更多数据
 					}
 				} catch (error) {
 					console.error("加载考勤记录失败：", error);
 				} finally {
 					this.isLoading = false; // 加载结束
 				}
+				// 更新补卡状态
 				await this.updateReplenishStatus();
 			},
 
@@ -233,15 +224,20 @@
 					if (response.status_code === 200) {
 						// 关闭弹窗
 						this.closePickerDialog();
-						this.loadAllRecords();
-						// 更新考勤记录
-						this.attendanceRecords = response.data;
-						console.log('this.attendanceRecords', this.attendanceRecords);
 						// 显示补签成功提示
 						uni.showToast({
 							title: '补签成功',
 							icon: 'success',
 							duration: 2000,
+						});
+						// 请求更新考勤记录并更新页面
+						this.attendanceRecords = this.attendanceRecords.filter(
+							record => record.checkInTime !== checkInTime
+						);
+						await this.loadAllRecords(); // 重新加载考勤记录
+						this.$nextTick(() => {
+							// 确保页面渲染完成
+							console.log("页面渲染完成，数据已重新加载");
 						});
 					} else {
 						// 提示输入时间
@@ -260,8 +256,6 @@
 					});
 				}
 			}
-
-
 
 		},
 	};
