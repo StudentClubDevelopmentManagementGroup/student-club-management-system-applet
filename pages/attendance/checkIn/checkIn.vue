@@ -1,22 +1,36 @@
 <template>
-	<view class="container">
+	<view class="container" style="background-image: url('/static/images/背景.jpg');">
 		<!-- 第一部分：时间计时 -->
 		<view class="section timer-section">
-			<p>{{ formattedTime }}</p>
+			<p class="timer">{{ formattedTime }}</p>
 			<!-- 显示当前选中的社团名称 -->
-			<p v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
+			<view class="club">
+				<image class="club-icon" src="/static/svgs/位置.svg"></image>
+				<p class="club-name" v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
+			</view>
 		</view>
 
 		<!-- 第二部分：打卡记录 -->
 		<view class="section log-section">
 			<!-- 获取当天最新签到状态 -->
-			<p>{{ checkInStatus }}</p>
-			<p>{{ checkOutStatus }}</p>
-			<view v-if="attendanceDuration">
-				<p>本周总计打卡时间: {{ formatDuration(attendanceDuration) }}</p>
+			<view class="checkin">
+				<image class="checkin_time" src="/static/svgs/签到时钟.svg"></image>
+				<p class="checkin-status">{{ checkInStatus }}</p>
 			</view>
-			<view v-else>
-				<p>本周未出勤！</p>
+
+			<view class="checkout">
+				<image class="checkout_time" src="/static/svgs/签到时钟.svg"></image>
+				<p>{{ checkOutStatus }}</p>
+			</view>
+
+			<view class=" week-duration">
+				<image class="duration-icon" src="/static/svgs/打卡时长.svg"></image>
+				<view v-if="attendanceDuration">
+					<p>本周总计打卡时间: {{ formatDuration(attendanceDuration) }}</p>
+				</view>
+				<view v-else>
+					<p>本周未出勤！</p>
+				</view>
 			</view>
 		</view>
 
@@ -126,16 +140,16 @@
 					this.resetElapsedTime(); // 到时间后重置计时
 				}, timeUntilReset);
 			},
-			
+
 			// 重置计时逻辑
 			resetElapsedTime() {
 				//console.log("时间已到 23:59:59，重置计时器");
 				clearInterval(this.timerInterval); // 停止计时
 				wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
 				this.elapsedTime = 0; // 重置计时
-				this.isClockingIn = false;  //打卡按钮标志 未打卡
+				this.isClockingIn = false; //打卡按钮标志 未打卡
 				wx.setStorageSync('isClockingIn', 'false');
-				
+
 			},
 
 			//获取本周一和周日时间
@@ -220,9 +234,11 @@
 					});
 
 					// 检查请求是否成功
-					if (response.status_code === 200 && response.data) {
+					if (response.status_code === 200 && response.data.length !== 0) {
+						console.log("本周时长数据", response.data.length)
 						this.attendanceDuration = response.data[0].attendanceDurationTime;
 						console.log("用户一周打卡时长", this.attendanceDuration);
+						console.log("本周时长数据", response.data)
 
 					} else {
 						console.error("请求失败:", response.status_text);
@@ -301,7 +317,7 @@
 				const hours = Math.floor(seconds / 3600);
 				const minutes = Math.floor((seconds % 3600) / 60);
 				const remainingSeconds = seconds % 60;
-				return `${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+				return `${hours}小时${minutes}分钟${remainingSeconds}秒`;
 
 			},
 
@@ -340,7 +356,7 @@
 				clearInterval(this.timerInterval); // 停止计时
 				this.elapsedTime = 0; // 重置计时
 				wx.removeStorageSync('clockStartTime'); // 清除本地保存的时间戳
-				// 设置半秒延迟执行 fetchAttendanceDuration
+				// 设置半秒延迟执行 
 				//fetchAttendanceDuration 依赖于 checkOutRequest 的结果，
 				//直接调用可能会导致数据未及时更新的问题，延迟调用可以避免这些问题。
 				setTimeout(() => {

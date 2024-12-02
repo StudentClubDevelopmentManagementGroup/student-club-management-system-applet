@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" style="background-image: url('/static/images/背景.jpg');">
 		<!-- 顶部提示词 -->
 		<view class="header-tips">
 			<text>补卡</text>

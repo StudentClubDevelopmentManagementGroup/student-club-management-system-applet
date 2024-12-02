@@ -1,30 +1,100 @@
 .container {
+	background-size: cover; /* 让背景图片覆盖整个容器 */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	padding: 20px;
+	margin-top: 0px;
+	height: 94vh; /* 让容器高度适配父容器（即 body 的高度） */
 }
 
 .section {
 	width: 100%;
 	max-width: 400px;
 	/* 限制最大宽度，确保宽度一致 */
-	padding: 20px;
+	padding: 10px;
+	margin-top: 20px;
 	margin-bottom: 20px;
-	border: 2px solid #4CAF50;
+	border: 2px solid #DCDCDC;
 	border-radius: 8px;
 	/* 圆角边框 */
 	box-sizing: border-box;
-	background-color: #f9f9f9;
+	background-color: #FFFFFF;
 }
 
 .timer-section {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+	position: relative;
+	/* 确保子元素可以用绝对定位调整 */
+	text-align: center;
+	/* 居中对齐所有文本 */
+	padding: 20px;
+	/* 添加内边距 */
 }
 
+.timer {
+	font-size: 30px;
+	/* 格式化计时器文字大小 */
+	margin-bottom: 25px;
+	/* 增加计时器和社团名称之间的间距 */
+}
+.club {
+    display: flex; /* 使用 Flexbox 实现水平排列 */
+    align-items: center; /* 垂直方向居中对齐 */
+    gap: 10px; /* 设置元素之间的间距 */
+	position: absolute;
+	/* 使社团名称可定位 */
+	bottom: 10px;
+	/* 固定到父容器的底部 */
+}
+.club-icon {
+    width: 23px; /* 设置图片宽度 */
+    height: 23px; /* 设置图片高度，保持比例 */
+}
+.club-name {
+	font-size: 17px;
+}
+.checkin {
+    display: flex; /* 使用 Flexbox 实现水平排列 */
+    align-items: center; /* 垂直方向居中对齐 */
+    gap: 10px; /* 设置元素之间的间距 */
+	margin-bottom: 15px;
+}
+.checkin_time {
+    width: 28px; /* 设置图片宽度 */
+    height: 28px; /* 设置图片高度，保持比例 */
+}
+
+.checkin-status {
+    margin: 0; /* 移除默认 margin，避免布局问题 */
+    font-size: 16px; /* 设置字体大小 */
+}
+
+.checkout {
+	margin-bottom: 15px;
+    display: flex; /* 使用 Flexbox 实现水平排列 */
+    align-items: center; /* 垂直方向居中对齐 */
+    gap: 10px; /* 设置元素之间的间距 */
+}
+.checkout_time {
+    width: 28px; /* 设置图片宽度 */
+    height: 28px; /* 设置图片高度，保持比例 */
+}
+
+.week-duration {
+    display: flex; /* 使用 Flexbox 实现水平排列 */
+    align-items: center; /* 垂直方向居中对齐 */
+    gap: 10px; /* 设置元素之间的间距 */
+}
+.duration-icon {
+    width: 28px; /* 设置图片宽度 */
+    height: 28px; /* 设置图片高度，保持比例 */
+}
+
+
+
 .log-section {
+	width: 100%;
+	margin-top: 3px;
 	/* 可以添加需要的样式 */
 }
 
@@ -50,11 +120,11 @@
 	padding: 0px;
 	/* 按钮高度 */
 	font-size: 18px;
-	background-color: #007bff;
+	background-color: #0272af;
 	/* 蓝色背景 */
 	color: white;
 	border: none;
-	border-radius: 8px;
+	border-radius: 20px;
 	/* 与矩形边框一致 */
 	cursor: pointer;
 }

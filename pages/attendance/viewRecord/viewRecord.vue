@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" style="background-image: url('/static/images/背景.jpg');">
 		<!-- 顶部提示词 -->
 		<view class="header-tips">
 			<text>考勤记录</text>
@@ -129,6 +129,9 @@ export default {
 
 <style scoped>
 .container {
+	background-size: cover; /* 让背景图片覆盖整个容器 */
+	background-repeat: no-repeat; /* 防止背景图片重复 */
+	background-position: center; /* 居中显示背景图片 */
 	display: flex;
 	flex-direction: column;
 	height: 100vh; /* 占满整个屏幕高度 */
@@ -152,6 +155,7 @@ export default {
 
 .record-item {
 	padding: 15px;
+	margin-left: 10px;
 	border-bottom: 1px solid #e0e0e0;
 }
 
