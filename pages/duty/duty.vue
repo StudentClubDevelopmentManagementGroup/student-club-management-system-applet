@@ -98,10 +98,6 @@ export default {
     // 设置当前社团
     this.currentClub = clubInfo[currentClubIndex] || {};
 
-    // 获取座位信息
-    if (this.currentClub.clubId) {
-      this.fetchSeats();
-    }
   },
   methods: {
 	//开启查询下拉菜单  
@@ -207,6 +203,7 @@ export default {
 
 
 uploadImage(dutyItem) {
+  this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
   wx.chooseImage({
     count: 4,
     sizeType: ["compressed"],
@@ -221,6 +218,9 @@ uploadImage(dutyItem) {
           url: `${baseUrl}/club/duty/report_results`, // 后端上传接口
           filePath: filePath, // 本地文件路径
           name: 'file', // 后端接收的文件字段名
+		  header: {
+		  	"guet-s-c-m-s-token":getApp().globalData.userData.token
+		  },
           formData: {
             date_time: dutyItem.date, // 时间
             member_id: this.userInfo.userId, // 用户ID
@@ -234,6 +234,7 @@ uploadImage(dutyItem) {
             } else {
               console.error("上传失败，服务器返回错误:", resData);
             }
+			 this.fetchDutyData()
           },
           fail: (err) => {
             console.error("图片上传失败:", err);
