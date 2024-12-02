@@ -1,9 +1,9 @@
 <template>
 	<view class="container" style="background-image: url('/static/images/背景.jpg');">
 		<!-- 顶部提示词 -->
-		<view class="header-tips">
+<!-- 		<view class="header-tips">
 			<text>补卡</text>
-		</view>
+		</view> -->
 
 		<!-- 第二部分：展示考勤记录 -->
 		<scroll-view class="attendance-list" scroll-y :scroll-with-animation="true" @scrolltolower="loadMoreRecords">
