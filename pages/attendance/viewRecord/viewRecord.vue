@@ -1,13 +1,14 @@
 <template>
-	<view class="container">
+	<view class="container" >
 		<!-- 顶部提示词 -->
 		<view class="header-tips">
-			<text>考勤记录</text>
+			<p class="club-name" v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
 		</view>
 
 		<!-- 第二部分：展示考勤记录 -->
 		<scroll-view
 			class="attendance-list"
+			style="background-image: url('/static/images/背景.jpg');"
 			scroll-y
 			:scroll-with-animation="true"
 			@scrolltolower="loadMoreRecords"
@@ -32,7 +33,7 @@
 		
 		<!-- 第三部分底部加载更多按钮 -->
 		<view v-if="currentPage < totalPages" class="load-more-section">
-			<button @click="loadMoreRecords" :disabled="isLoading">
+			<button @click="loadMoreRecords" class="load-more-btn" :disabled="isLoading">
 				{{ isLoading ? '加载中...' : '加载更多' }}
 			</button>
 		</view>
@@ -128,43 +129,5 @@ export default {
 </script>
 
 <style scoped>
-.container {
-	display: flex;
-	flex-direction: column;
-	height: 100vh; /* 占满整个屏幕高度 */
-}
-
-/* 顶部提示词样式 */
-.header-tips {
-	background-color: #d1ecf1; /* 浅蓝色背景 */
-	color: #0c5460; /* 深蓝色字体 */
-	padding: 10px;
-	text-align: center;
-	border-radius: 4px;
-	margin-bottom: 10px;
-}
-
-.attendance-list {
-	flex: 1; /* 占据剩余空间 */
-	overflow-y: auto;
-	background-color: #fff;
-}
-
-.record-item {
-	padding: 15px;
-	border-bottom: 1px solid #e0e0e0;
-}
-
-.load-more-section {
-	padding: 10px;
-	text-align: center;
-	background-color: #f7f7f7;
-}
-
-.loading {
-	text-align: center;
-	color: #666;
-	padding: 10px;
-}
-
+	@import url(./viewRecord.css);
 </style>

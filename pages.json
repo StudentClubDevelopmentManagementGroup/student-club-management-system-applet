@@ -63,21 +63,27 @@
 			"path" : "pages/attendance/checkIn/checkIn",
 			"style" :
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "考勤",
+				"navigationBarBackgroundColor": "#0272af",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path" : "pages/attendance/makeUpCheckIn/makeUpCheckIn",
 			"style" :
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "补卡",
+				"navigationBarBackgroundColor": "#0272af",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path" : "pages/attendance/viewRecord/viewRecord",
 			"style" :
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "考勤记录",
+				"navigationBarBackgroundColor": "#0272af",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{

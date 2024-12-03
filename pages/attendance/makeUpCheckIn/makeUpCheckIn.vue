@@ -1,12 +1,16 @@
 <template>
-	<view class="container">
+	<view class="container" >
 		<!-- 顶部提示词 -->
 		<view class="header-tips">
-			<text>补卡</text>
+			<p class="club-name" v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
 		</view>
 
 		<!-- 第二部分：展示考勤记录 -->
-		<scroll-view class="attendance-list" scroll-y :scroll-with-animation="true" @scrolltolower="loadMoreRecords">
+		<scroll-view 
+		class="attendance-list" 
+		style="background-image: url('/static/images/背景.jpg');"
+		scroll-y :scroll-with-animation="true" 
+		@scrolltolower="loadMoreRecords">
 			<view v-if="attendanceRecords.length > 0">
 				<view v-for="(record, index) in attendanceRecords" :key="index" class="record-item">
 					<view class="record-info">
