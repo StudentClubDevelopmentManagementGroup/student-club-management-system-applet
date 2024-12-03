@@ -1,5 +1,5 @@
 <template>
-  <view id="main-content">
+  <view id="main-content" style="background-image: url('/static/images/背景.jpg');">
     <!-- 查询条件 -->
     <view class="search-container">
 	  <button class="self-duty-btn" @click="fetchSelfDutyData">查看自己的值日</button>
@@ -200,8 +200,8 @@ export default {
 	        console.error("Error fetching duty data by time:", error);
 	      });
 	  },
-
-
+	  
+	  
 uploadImage(dutyItem) {
   this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
   wx.chooseImage({
@@ -247,7 +247,6 @@ uploadImage(dutyItem) {
     },
   });
 }
-
 
 
 
