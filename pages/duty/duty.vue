@@ -9,19 +9,19 @@
 	<view v-show="isShowingPopup" class="fliter-popup">
 		<view class="fliter-popup-mask" @click="hidePopup"></view>
 		<view class="fliter-popup-content">
-			<view style="display: flex; flex-direction: row; margin: 5px;">
-				<text>姓名:</text>
-				<input type="text" placeholder="请输入姓名" v-model="name" />
+			<view style="display: flex; flex-direction: row;margin: 5px;">
+				<text>区域:</text>
+				<input type="text" placeholder="请输入区域" v-model="area" />
 			</view>
 			<view style="display: flex; flex-direction: row;margin: 5px;">
 				<text>日期:</text>
-				<input type="text" placeholder="请输入年月日,用'-'分隔" v-model="date" />
+				<input type="text" placeholder="请输入年月日,用'-'分隔,如'2024-06-03'" v-model="date" />
 			</view>
-			<view style="display: flex; flex-direction: row;margin: 5px;">
-				<text>社团:</text>
-				<input type="text" placeholder="请输入社团名称" v-model="club" />
+			<view style="display: flex; flex-direction: row; margin: 5px;">
+				<text>姓名:</text>
+				<input type="text" placeholder="请输入清理者姓名" v-model="name" />
 			</view>
-			<button class="search-btn" @click="()=>{ hidePopup(); fetchDutyData()}">完成</button>
+			<button class="search-btn" @click="()=>{ hidePopup(); fetchDutyDataByTime()}">完成</button>
 		</view>
 	</view>
 	
@@ -73,7 +73,7 @@ export default {
       selfDutyData: [], // 用户个人值日的数据
       name: "", // 查询的姓名
       date: "", // 查询的时间
-      club: "", // 查询的社团
+      area: "", // 查询的区域
 	  isShowingPopup:false,
     };
   },
@@ -98,10 +98,6 @@ export default {
     // 设置当前社团
     this.currentClub = clubInfo[currentClubIndex] || {};
 
-    // 获取座位信息
-    if (this.currentClub.clubId) {
-      this.fetchSeats();
-    }
   },
   methods: {
 	//开启查询下拉菜单  
@@ -150,9 +146,9 @@ export default {
       this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
 
       const params = {
-        club_id: 36,
+        club_id: this.currentClub.clubId,
         page_num: 1,
-        page_size: 10000,
+        page_size: 1000,
       };
 
       http
@@ -172,9 +168,42 @@ export default {
           console.error("Error fetching self duty data:", error);
         });
     },
+	// 新增：根据日期查询值日数据
+	  fetchDutyDataByTime() {
+	    // 清空之前的数据
+	    this.selfDutyData.splice(0); // 清空个人值日数据
+	    this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
+	
+	    const params = {
+	      club_id: this.currentClub.clubId,  // 固定的社团 ID
+	      number: this.area,    // 可以根据需要进行调整
+	      name: this.name,  // 这里可以使用查询条件中的姓名
+	      duty_time: this.date+" 00:00:00",  // 使用查询条件中的日期
+	      page_num: 1,
+	      page_size: 1000,  // 设置每页显示的条数
+	    };
+	
+	    http
+	      .post('/club/duty/select_by_time', params)
+	      .then((res) => {
+	        if (res.status_code === 200 && res.data.records) {
+	          this.dutyData = res.data.records.map((record) => ({
+	            period: record.number,  // 假设 number 是时段
+	            date: record.date_time,  // 假设 date_time 是时间
+	            cleaner_name: record.cleaner_name, // 只显示清理者
+	            cleaner_id: record.cleaner_id, // 添加 cleaner_id
+	            image_file: record.image_file || [], // 图片数据
+	          }));
+	        }
+	      })
+	      .catch((error) => {
+	        console.error("Error fetching duty data by time:", error);
+	      });
+	  },
 
 
 uploadImage(dutyItem) {
+  this.dutyData.splice(0); // 清空其他值日数据，防止之前的数据残留
   wx.chooseImage({
     count: 4,
     sizeType: ["compressed"],
@@ -189,6 +218,9 @@ uploadImage(dutyItem) {
           url: `${baseUrl}/club/duty/report_results`, // 后端上传接口
           filePath: filePath, // 本地文件路径
           name: 'file', // 后端接收的文件字段名
+		  header: {
+		  	"guet-s-c-m-s-token":getApp().globalData.userData.token
+		  },
           formData: {
             date_time: dutyItem.date, // 时间
             member_id: this.userInfo.userId, // 用户ID
@@ -202,6 +234,7 @@ uploadImage(dutyItem) {
             } else {
               console.error("上传失败，服务器返回错误:", resData);
             }
+			 this.fetchDutyData()
           },
           fail: (err) => {
             console.error("图片上传失败:", err);

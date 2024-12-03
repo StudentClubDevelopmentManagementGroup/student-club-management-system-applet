@@ -81,11 +81,6 @@
 
 			// 将当前社团信息存储到 data 中
 			this.currentClub = selectedClub;
-
-			// 恢复打卡状态
-
-
-
 			// 恢复打卡状态
 			const savedClockingStatus = wx.getStorageSync('isClockingIn');
 			if (savedClockingStatus === 'true') {
@@ -256,8 +251,12 @@
 					const response = await http.post("/attendance/checkIn", {
 						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
 						userId: this.userInfo.userId, // 使用 this.userInfo.userId
-						checkInTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
+						checkInTime: this.requestFormatDate( new Date((new Date()).getTime() - 1000) )
+						//checkInTime: this.requestFormatDate( new Date() )
 					});
+					// console.log("签到clubId",this.currentClub.clubId)
+					// console.log("签到用户id",this.userInfo.userId)
+					// console.log("签到时间",this.requestFormatDate( new Date() ))
 					console.log("签到时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)))
 
 					// 检查请求是否成功
@@ -288,9 +287,13 @@
 					const response = await http.patch("/attendance/checkout", {
 						clubId: this.currentClub.clubId, // 使用 this.currentClub.clubId
 						userId: this.userInfo.userId, // 使用 this.userInfo.userId
-						checkoutTime: this.requestFormatDate(new Date((new Date()).getTime() - 1000))
+						checkoutTime: this.requestFormatDate( new Date((new Date()).getTime() - 1000) )
+						//checkoutTime: this.requestFormatDate( new Date() )
 					});
-					console.log("签退时间前一秒", this.requestFormatDate(new Date((new Date()).getTime() - 1000)));
+					// console.log("签到clubId",this.currentClub.clubId)
+					// console.log("签到用户id",this.userInfo.userId)
+					// console.log("签到时间",this.requestFormatDate( new Date() ))
+					console.log("签退时间前一秒", this.requestFormatDate( new Date((new Date()).getTime() - 1000)));
 
 					// 检查请求是否成功
 					if (response.status_code === 200 && response.data) {
