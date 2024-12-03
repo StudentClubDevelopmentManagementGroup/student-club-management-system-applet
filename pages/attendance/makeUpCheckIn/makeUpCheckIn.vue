@@ -2,7 +2,7 @@
 	<view class="container" >
 		<!-- 顶部提示词 -->
 		<view class="header-tips">
-			<text>{{ currentClub.clubName }}</text>
+			<p class="club-name" v-if="currentClub.clubName">{{ currentClub.clubName }}</p>
 		</view>
 
 		<!-- 第二部分：展示考勤记录 -->
