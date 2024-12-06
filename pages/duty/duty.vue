@@ -21,7 +21,7 @@
 				<text>姓名:</text>
 				<input type="text" placeholder="请输入清理者姓名" v-model="name" />
 			</view>
-			<button class="search-btn" @click="()=>{ hidePopup(); fetchDutyDataByTime()}">完成</button>
+			<button class="search-btn" @click="()=>{ hidePopup(); fetchDutyDataDynamic()}">完成</button>
 		</view>
 	</view>
 	
@@ -100,6 +100,16 @@ export default {
 
   },
   methods: {
+	  // 动态查询方法
+	    fetchDutyDataDynamic() {
+	      if (this.date) {
+	        // 如果输入了日期，使用带时间的查询器
+	        this.fetchDutyDataByTime();
+	      } else {
+	        // 如果未输入日期，使用不带时间的查询器
+	        this.fetchDutyData();
+	      }
+	    },
 	//开启查询下拉菜单  
     showPopup(){
 		this.isShowingPopup = true
@@ -115,8 +125,8 @@ export default {
 
       const params = {
         club_id: this.currentClub.clubId,
-        number: "",
-        name: "",
+        number: this.area,
+        name: this.name,
         page_num: 1,
         page_size: 1000,
       };
