@@ -1,11 +1,13 @@
 .container {
-	background-size: cover; /* 让背景图片覆盖整个容器 */
+	background-size: cover;
+	/* 让背景图片覆盖整个容器 */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	padding: 20px;
 	margin-top: 0px;
-	height: 94vh; /* 让容器高度适配父容器（即 body 的高度） */
+	height: 94vh;
+	/* 让容器高度适配父容器（即 body 的高度） */
 }
 
 .section {
@@ -37,57 +39,86 @@
 	margin-bottom: 25px;
 	/* 增加计时器和社团名称之间的间距 */
 }
+
 .club {
-    display: flex; /* 使用 Flexbox 实现水平排列 */
-    align-items: center; /* 垂直方向居中对齐 */
-    gap: 10px; /* 设置元素之间的间距 */
+	display: flex;
+	/* 使用 Flexbox 实现水平排列 */
+	align-items: center;
+	/* 垂直方向居中对齐 */
+	gap: 10px;
+	/* 设置元素之间的间距 */
 	position: absolute;
 	/* 使社团名称可定位 */
 	bottom: 10px;
 	/* 固定到父容器的底部 */
 }
+
 .club-icon {
-    width: 23px; /* 设置图片宽度 */
-    height: 23px; /* 设置图片高度，保持比例 */
+	width: 23px;
+	/* 设置图片宽度 */
+	height: 23px;
+	/* 设置图片高度，保持比例 */
 }
+
 .club-name {
 	font-size: 17px;
 }
+
 .checkin {
-    display: flex; /* 使用 Flexbox 实现水平排列 */
-    align-items: center; /* 垂直方向居中对齐 */
-    gap: 10px; /* 设置元素之间的间距 */
+	display: flex;
+	/* 使用 Flexbox 实现水平排列 */
+	align-items: center;
+	/* 垂直方向居中对齐 */
+	gap: 10px;
+	/* 设置元素之间的间距 */
 	margin-bottom: 15px;
 }
+
 .checkin_time {
-    width: 28px; /* 设置图片宽度 */
-    height: 28px; /* 设置图片高度，保持比例 */
+	width: 28px;
+	/* 设置图片宽度 */
+	height: 28px;
+	/* 设置图片高度，保持比例 */
 }
 
 .checkin-status {
-    margin: 0; /* 移除默认 margin，避免布局问题 */
-    font-size: 16px; /* 设置字体大小 */
+	margin: 0;
+	/* 移除默认 margin，避免布局问题 */
+	font-size: 16px;
+	/* 设置字体大小 */
 }
 
 .checkout {
 	margin-bottom: 15px;
-    display: flex; /* 使用 Flexbox 实现水平排列 */
-    align-items: center; /* 垂直方向居中对齐 */
-    gap: 10px; /* 设置元素之间的间距 */
+	display: flex;
+	/* 使用 Flexbox 实现水平排列 */
+	align-items: center;
+	/* 垂直方向居中对齐 */
+	gap: 10px;
+	/* 设置元素之间的间距 */
 }
+
 .checkout_time {
-    width: 28px; /* 设置图片宽度 */
-    height: 28px; /* 设置图片高度，保持比例 */
+	width: 28px;
+	/* 设置图片宽度 */
+	height: 28px;
+	/* 设置图片高度，保持比例 */
 }
 
 .week-duration {
-    display: flex; /* 使用 Flexbox 实现水平排列 */
-    align-items: center; /* 垂直方向居中对齐 */
-    gap: 10px; /* 设置元素之间的间距 */
+	display: flex;
+	/* 使用 Flexbox 实现水平排列 */
+	align-items: center;
+	/* 垂直方向居中对齐 */
+	gap: 10px;
+	/* 设置元素之间的间距 */
 }
+
 .duration-icon {
-    width: 28px; /* 设置图片宽度 */
-    height: 28px; /* 设置图片高度，保持比例 */
+	width: 28px;
+	/* 设置图片宽度 */
+	height: 28px;
+	/* 设置图片高度，保持比例 */
 }
 
 
