@@ -1,5 +1,5 @@
 .main-content {
-	position: absolute;
+/* 	position: absolute; */
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -39,6 +39,15 @@
 	padding-top: 30px;
 }
 
+
+#t3 {
+	flex: 1;
+	font-size: 15.5px;
+	font-weight: bolder;
+	color: black;
+	padding-left: 20px;
+	padding-top: 10px;
+}
 .body{
 	display: flex;
 	flex-direction: column;
