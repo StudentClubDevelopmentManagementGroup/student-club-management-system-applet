@@ -43,9 +43,10 @@
 				<button id="veriCode-right" :class="countdownInstantiate?'disable':''" @click="askForRegisterCode()">{{countdownText}}</button>
 			</view>
 		</view>
-		<text id="t3">注：学号、院系、邮箱地址，仅用于登录，使用过程中产生的数据记录，目前电话仅用于登录方式备选，如有需要使用，会以邮件的形式通知。</text>
-		<button id="register" @click="register()">授权</button>
-
+		<view class="scroll-area">
+			<text id="t3">注：学号、院系、邮箱地址，仅用于登录，使用过程中产生的数据记录;电话仅用于登录方式备选，如有需要使用，会以邮件的形式通知确认。</text>
+			<button id="register" @click="register()">授权</button>
+		</view>
 	</view>
 </template>
 
